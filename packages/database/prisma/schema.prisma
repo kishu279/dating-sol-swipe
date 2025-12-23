@@ -1,0 +1,135 @@
+  // This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PromptCategory {
+  FUN
+  LIFESTYLE
+  VALUES
+  ICEBREAKER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  OTHER
+}
+
+model User {
+  id               String      @id @default(cuid())
+  walletPubKey     String      @unique
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  profile          Profile?
+  preferences      Preferences?
+  photos           Photo[]
+  likesGiven       Like[]      @relation("UserLikes")
+  likesReceived    Like[]      @relation("UserLikedBy")
+  promptAnswers    PromptAnswer[]
+
+  @@index([walletPubKey])
+}
+
+model Profile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+
+  displayName  String
+  age          Int
+  gender       Gender
+  orientation  String
+  bio          String?
+  profession   String?
+  hobbies      String[] @default([])
+  religion     String?
+  location     String?
+  heightCm     Int?
+
+  @@index([age])
+  @@index([gender])
+  @@index([location])
+}
+
+model Preferences {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+
+  preferredGenders Gender[] @default([])
+  ageMin           Int?
+  ageMax           Int?
+  maxDistanceKm    Int?
+}
+
+model Prompt {
+  id          String         @id @default(cuid())
+  question    String
+  category    PromptCategory
+  isActive    Boolean        @default(true)
+  order       Int?
+  createdAt   DateTime       @default(now())
+
+  answers     PromptAnswer[]
+}
+
+model PromptAnswer {
+  id         String   @id @default(cuid())
+  userId     String
+  promptId   String
+  answer     String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  prompt     Prompt   @relation(fields: [promptId], references: [id])
+
+  @@unique([userId, promptId])
+}
+
+model Photo {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id])
+  url      String
+  order    Int
+
+  @@index([userId])
+}
+
+model Like {
+  id           String   @id @default(cuid())
+  fromUserId   String
+  toUserId     String
+  createdAt    DateTime @default(now())
+
+  fromUser     User     @relation("UserLikes", fields: [fromUserId], references: [id])
+  toUser       User     @relation("UserLikedBy", fields: [toUserId], references: [id])
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+}
+
+// model Message {
+//   id              String   @id @default(cuid())
+//   fromUserId      String
+//   toUserId        String
+//   content         String
+//   createdAt       DateTime @default(now())
+
+//   fromUser        User     @relation("SentMessages", fields: [fromUserId], references: [id])
+//   toUser          User     @relation("ReceivedMessages", fields: [toUserId], references: [id])
+// }
