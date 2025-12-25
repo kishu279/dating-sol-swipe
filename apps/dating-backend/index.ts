@@ -1,10 +1,19 @@
 import express from "express";
 import type { Request, Response } from "express";
 import apiRoutes from "./src/routes";
+import cors from "cors";
 
 const app = express();
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
 
 // Logging middleware
 app.use((req, res, next) => {

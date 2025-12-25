@@ -155,9 +155,9 @@ export const getUsers = async (req: Request, res: Response) => {
 };
 
 /**
- * Fetches a specific user by their ID, including their profile and preferences.
+ * Fetches a specific user by their ID or wallet public key, including their profile and preferences.
  *
- * @param req - Express request object containing the user ID in params
+ * @param req - Express request object containing the user ID or wallet public key in params
  * @param res - Express response object
  * @returns 200 if user found, 404 if user not found, 500 if an error occurs
  */
@@ -165,13 +165,25 @@ export const getUserById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const user = await prisma.user.findUnique({
+    // Try to find user by ID first, then by wallet public key
+    let user = await prisma.user.findUnique({
       where: { id },
       include: {
         profile: true,
         preferences: true,
       },
     });
+
+    // If not found by ID, try wallet public key
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { walletPubKey: id },
+        include: {
+          profile: true,
+          preferences: true,
+        },
+      });
+    }
 
     if (!user) {
       res.status(404).json({
