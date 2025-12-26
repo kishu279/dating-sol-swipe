@@ -32,14 +32,26 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 async function main() {
-  try {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (error) {
+  const PORT = process.env.PORT || 3000;
+  const server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+
+  server.on("error", (error) => {
     console.error("Error starting the server:", error);
-  }
+    process.exit(1);
+  });
+
+  const gracefulShutdown = () => {
+    console.log("Received shutdown signal, closing server...");
+    server.close(() => {
+      console.log("Server closed");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", gracefulShutdown);
+  process.on("SIGINT", gracefulShutdown);
 }
 
 main();

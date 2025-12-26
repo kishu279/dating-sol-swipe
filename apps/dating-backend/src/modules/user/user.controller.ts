@@ -12,6 +12,18 @@ export const createUser = async (req: Request, res: Response) => {
   const { walletPublicKey } = req.body;
 
   try {
+    const userExists = await prisma.user.findUnique({
+      where: { walletPubKey: walletPublicKey },
+    });
+
+    if (userExists) {
+      res.status(200).json({
+        userId: userExists.id,
+        message: "User already exists",
+      });
+      return;
+    }
+
     const user = await prisma.user.create({
       data: {
         walletPubKey: walletPublicKey,

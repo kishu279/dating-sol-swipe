@@ -523,13 +523,13 @@ GET /api/users/9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin  (by Wallet Public K
       "displayName": "Alex Smith",
       "bio": "Love hiking and photography",
       "age": 25,
-      "gender": "Male",
+      "gender": "MALE",
       "orientation": "Straight"
     },
     "preferences": {
       "id": "clpref123456789abcdef",
       "userId": "clxyz123456789abcdef",
-      "preferredGenders": ["Female"],
+      "preferredGenders": ["FEMALE"],
       "ageMin": 18,
       "ageMax": 35,
       "maxDistanceKm": 50
@@ -553,12 +553,12 @@ GET /api/users/9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin  (by Wallet Public K
 | data.profile.displayName | string | No | User's display name |
 | data.profile.bio | string | No | User biography/description |
 | data.profile.age | number | No | User's age |
-| data.profile.gender | string | No | User's gender |
+| data.profile.gender | string | No | User's gender (Gender enum: `MALE`, `FEMALE`, `NON_BINARY`, `OTHER`) |
 | data.profile.orientation | string | No | User's sexual orientation |
 | data.preferences | object | **Yes** | User preferences object (null if not set) |
 | data.preferences.id | string | No | Preferences unique identifier |
 | data.preferences.userId | string | No | Reference to parent user |
-| data.preferences.preferredGenders | array | No | Array of preferred gender strings |
+| data.preferences.preferredGenders | array | No | Array of Gender enum values (`MALE`, `FEMALE`, `NON_BINARY`, `OTHER`) |
 | data.preferences.ageMin | number | No | Minimum preferred age |
 | data.preferences.ageMax | number | No | Maximum preferred age |
 | data.preferences.maxDistanceKm | number | No | Maximum distance in kilometers |
@@ -698,8 +698,10 @@ Content-Type: application/json
 | name | string | ✅ Yes | 1-100 characters | Display name for the user profile |
 | age | number | ✅ Yes | Integer, must be ≥ 18 | User's age (dating app requirement) |
 | bio | string | ✅ Yes | 1-500 characters | User biography/description/interests |
-| gender | string | ✅ Yes | Non-empty string | User's gender (e.g., Male, Female, Non-binary, Other) |
+| gender | string | ✅ Yes | Must be valid Gender enum value | User's gender. Valid values: `MALE`, `FEMALE`, `NON_BINARY`, `OTHER` |
 | orientation | string | ✅ Yes | Non-empty string | Sexual orientation (e.g., Straight, Gay, Lesbian, Bisexual, Pansexual) |
+
+> **📝 Gender Enum Values:** The `gender` field must use the canonical enum values defined in the database schema: `MALE`, `FEMALE`, `NON_BINARY`, or `OTHER`. These values are stored and returned exactly as provided (uppercase format).
 
 **Request Example:**
 
@@ -709,7 +711,7 @@ Content-Type: application/json
   "name": "Alex Smith",
   "age": 25,
   "bio": "Love hiking and photography. Looking for someone to explore the outdoors with! Coffee enthusiast ☕",
-  "gender": "Male",
+  "gender": "MALE",
   "orientation": "Straight"
 }
 ```
@@ -859,16 +861,18 @@ Content-Type: application/json
 **Request Body:**
 | Field | Type | Required | Validation | Description |
 |-------|------|----------|------------|-------------|
-| preferredGenders | array of strings | ✅ Yes | Non-empty array | Array of gender preferences (e.g., ["Male"], ["Female"], ["Male", "Female", "Non-binary"]) |
+| preferredGenders | array of strings | ✅ Yes | Non-empty array of Gender enum values | Array of gender preferences. Valid values: `MALE`, `FEMALE`, `NON_BINARY`, `OTHER` |
 | ageMin | number | ✅ Yes | Integer ≥ 18 | Minimum age of preferred matches |
 | ageMax | number | ✅ Yes | Integer, ageMax ≥ ageMin | Maximum age of preferred matches |
 | distanceRange | number | ✅ Yes | Positive number | Maximum distance in kilometers for matches |
+
+> **📝 Gender Enum Values:** The `preferredGenders` array must contain valid Gender enum values: `MALE`, `FEMALE`, `NON_BINARY`, or `OTHER`. These values are stored and returned exactly as provided (uppercase format).
 
 **Request Example:**
 
 ```json
 {
-  "preferredGenders": ["Female"],
+  "preferredGenders": ["FEMALE"],
   "ageMin": 18,
   "ageMax": 35,
   "distanceRange": 50
@@ -879,7 +883,7 @@ Content-Type: application/json
 
 ```json
 {
-  "preferredGenders": ["Male", "Female", "Non-binary"],
+  "preferredGenders": ["MALE", "FEMALE", "NON_BINARY"],
   "ageMin": 22,
   "ageMax": 40,
   "distanceRange": 100
@@ -967,9 +971,9 @@ POST /api/users/clxyz123456789abcdef/preferences
 ```javascript
 const userId = localStorage.getItem("userId");
 
-// Preferences from form
+// Preferences from form - values should be Gender enum: MALE, FEMALE, NON_BINARY, OTHER
 const preferences = {
-  preferredGenders: getSelectedGenders(), // ["Female"] or ["Male", "Female"]
+  preferredGenders: getSelectedGenders(), // ["FEMALE"] or ["MALE", "FEMALE"]
   ageMin: parseInt(document.getElementById("ageMin").value),
   ageMax: parseInt(document.getElementById("ageMax").value),
   distanceRange: parseInt(document.getElementById("distance").value),
@@ -1058,7 +1062,7 @@ GET /api/users/clxyz123456789abcdef/preferences
   "data": {
     "id": "clpref123456789abcdef",
     "userId": "clxyz123456789abcdef",
-    "preferredGenders": ["Female"],
+    "preferredGenders": ["FEMALE"],
     "ageMin": 18,
     "ageMax": 35,
     "maxDistanceKm": 50
@@ -1072,7 +1076,7 @@ GET /api/users/clxyz123456789abcdef/preferences
 | success | boolean | Always `true` when preferences found |
 | data.id | string | Unique preferences record identifier |
 | data.userId | string | Reference to the user these preferences belong to |
-| data.preferredGenders | array | Array of preferred gender strings |
+| data.preferredGenders | array | Array of Gender enum values (`MALE`, `FEMALE`, `NON_BINARY`, `OTHER`) |
 | data.ageMin | number | Minimum preferred age |
 | data.ageMax | number | Maximum preferred age |
 | data.maxDistanceKm | number | Maximum distance for matches in kilometers |
@@ -1534,11 +1538,11 @@ const result = await onboardUser(
     name: "Alex Smith",
     age: 25,
     bio: "Love hiking and photography",
-    gender: "Male",
+    gender: "MALE",
     orientation: "Straight",
   },
   {
-    preferredGenders: ["Female"],
+    preferredGenders: ["FEMALE"],
     ageMin: 18,
     ageMax: 35,
     distanceRange: 50,

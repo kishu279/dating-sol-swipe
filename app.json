@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.datingsolswipe"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.datingsolswipe"
+  }
+}
