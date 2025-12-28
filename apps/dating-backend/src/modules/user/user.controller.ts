@@ -64,6 +64,7 @@ export const createProfile = async (req: Request, res: Response) => {
       where: { id: userId },
     });
 
+    // 1. Authentication: Ensure user is authenticated
     if (!user) {
       res.status(404).json({
         success: false,
@@ -98,6 +99,7 @@ export const createProfile = async (req: Request, res: Response) => {
     });
   }
 };
+// ...existing code...
 
 /**
  * Updates an existing profile for a user.
@@ -137,34 +139,34 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Fetches all users from the database.
- *
- * @param req - Express request object
- * @param res - Express response object
- * @returns 200 with the list of users, 500 if an error occurs
- */
-export const getUsers = async (req: Request, res: Response) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        walletPubKey: true,
-      },
-    });
+// /**
+//  * Fetches all users from the database. NOT NEEDED BY THE NORMAL USERS
+//  *
+//  * @param req - Express request object
+//  * @param res - Express response object
+//  * @returns 200 with the list of users, 500 if an error occurs
+//  */
+// export const getUsers = async (req: Request, res: Response) => {
+//   try {
+//     const users = await prisma.user.findMany({
+//       select: {
+//         id: true,
+//         walletPubKey: true,
+//       },
+//     });
 
-    res.json({
-      success: true,
-      data: users,
-    });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch users",
-    });
-  }
-};
+//     res.json({
+//       success: true,
+//       data: users,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching users:", error);
+//     res.status(500).json({
+//       success: false,
+//       error: "Failed to fetch users",
+//     });
+//   }
+// };
 
 /**
  * Fetches a specific user by their ID or wallet public key, including their profile and preferences.
@@ -295,6 +297,64 @@ export const getUserPreferences = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch user preferences",
+    });
+  }
+};
+
+/**
+ *
+ * @param req
+ * @param res
+ */
+// getting the prompts to ans on the client side
+export const getPrompts = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const prompts = await prisma.prompt.findMany({});
+
+    res.json({
+      success: true,
+      data: prompts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch prompts",
+    });
+  }
+};
+
+type ansPromptsBody = {
+  answers: {
+    promptId: string;
+    answer: string;
+  }[];
+};
+
+/**
+ *
+ * @param req
+ * @param res
+ */
+export const ansPrompts = async (req: Request, res: Response) => {
+  const { id } = req.params; // getting the user id
+
+  try {
+    // get all the promts from the body
+    const { answers }: ansPromptsBody = req.body;
+
+    console.log("[DEBUG] User ID:", id);
+    console.log("[DEBUG] answers:", answers);
+
+    res.status(200).json({
+      success: true,
+      message: "Prompts answered successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to ans prompts",
     });
   }
 };

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { PROMPT_ANSWERS, PROMPT_QUESTIONS } from "./constants/prompts";
+
 let BASE_URL = "http://localhost:3000";
 
 // Generate a unique wallet address for each test run
@@ -186,6 +188,62 @@ async function testGetUser(userId) {
   }
 }
 
+// Fetch prompts from the API and log questions
+async function testGetPrompts() {
+  logStep(7, "Get Prompts from API");
+  try {
+    const { response, data } = await makeRequest("GET", "/api/prompts");
+    if (response.ok && data.success && Array.isArray(data.data)) {
+      logSuccess(`Fetched ${data.data.length} prompts from API.`);
+      logInfo("Prompt questions received:");
+      data.data.forEach((prompt, idx) => {
+        log(`  [${idx + 1}] (${prompt.id}) ${prompt.question}`, colors.blue);
+      });
+      return data.data;
+    } else {
+      logError("Failed to fetch prompts or invalid response structure.");
+      return [];
+    }
+  } catch (error) {
+    logError(`Get prompts failed: ${error.message}`);
+    return [];
+  }
+}
+
+async function testAnsPrompts(userId) {
+  logStep(7, "Post ans prompts to API");
+
+  try {
+    const ans = PROMPT_QUESTIONS.map((item) => {
+      const ansArr = PROMPT_ANSWERS[item.id];
+
+      return {
+        promptId: item.id,
+        answer:
+          ansArr[Math.floor(Math.random() * ansArr.length)] ||
+          "No answer provided",
+      };
+    });
+
+    console.log({ ans });
+
+    const { response, data } = await makeRequest(
+      "POST",
+      `/api/user/${userId}/prompts`,
+      { answers: ans }
+    );
+
+    if (response.ok && data.success) {
+      logSuccess(data.message);
+      logSuccess("Answered prompts successfully");
+    } else {
+      logError("Failed to answer prompts");
+    }
+  } catch (error) {
+    logError(`Ans prompts failed: ${error.message}`);
+  }
+}
+
 async function testGetAllUsers() {
   logStep(5, "Get All Users");
 
@@ -283,6 +341,12 @@ async function runTests() {
 
   // Test 6: User Preferences
   await testUserPreferences(userId);
+
+  // Test 7: Get Prompts from API
+  await testGetPrompts();
+
+  // Test 8: Ans Prompts to API
+  await testAnsPrompts(userId);
 
   // Summary
   log(`\n${colors.bold}${colors.green}🎉 Test Suite Completed!${colors.reset}`);
