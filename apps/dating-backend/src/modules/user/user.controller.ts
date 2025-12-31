@@ -4,12 +4,15 @@ import { prisma } from "@repo/database";
 /**
  * Creates a new user in the database with the provided wallet public key.
  *
- * @param req - Express request object containing walletPublicKey in the body
- * @param res - Express response object
- * @returns 201 if successful, 500 if an error occurs
+ * @route POST /user
+ * @body {string} walletPublicKey - The user's wallet public key.
+ * @returns {201} User created successfully. Returns userId and message.
+ * @returns {200} If user already exists. Returns userId and message.
+ * @returns {500} On error. Returns error message.
  */
 export const createUser = async (req: Request, res: Response) => {
   const { walletPublicKey } = req.body;
+  console.log("DEBUG: Creating user with walletPublicKey:", walletPublicKey);
 
   try {
     const userExists = await prisma.user.findUnique({
@@ -17,9 +20,9 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     if (userExists) {
-      res.status(200).json({
-        userId: userExists.id,
-        message: "User already exists",
+      res.status(400).json({
+        success: false,
+        error: "User already exists",
       });
       return;
     }
@@ -52,23 +55,54 @@ export const createUser = async (req: Request, res: Response) => {
 /**
  * Creates a new profile for an existing user.
  *
- * @param req - Express request object containing userId, name, age, bio, gender, and orientation
- * @param res - Express response object
- * @returns 201 if successful, 404 if user not found, 500 if an error occurs
+ * @route POST /user/profile
+ * @body {string} publicKey - The user's wallet public key.
+ * @body {string} name - Display name for the profile.
+ * @body {number} age - Age of the user.
+ * @body {string} bio - User's bio.
+ * @body {string} gender - User's gender.
+ * @body {string} orientation - User's orientation.
+ * @returns {201} Profile created successfully. Returns profileId and message.
+ * @returns {404} If user not found.
+ * @returns {500} On error. Returns error message.
  */
 export const createProfile = async (req: Request, res: Response) => {
-  const { userId, name, age, bio, gender, orientation } = req.body;
+  const { publicKey, name, age, bio, gender, orientation } = req.body;
+  console.log("DEBUG: Creating profile for:", {
+    publicKey,
+    name,
+    age,
+    bio,
+    gender,
+    orientation,
+  });
 
   try {
+    if (!publicKey) {
+      res.status(400).json({
+        success: false,
+        error: "publicKey is required",
+      });
+      return;
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { walletPubKey: publicKey },
+      include: { profile: true },
     });
 
-    // 1. Authentication: Ensure user is authenticated
     if (!user) {
       res.status(404).json({
         success: false,
         error: "User not found",
+      });
+      return;
+    }
+
+    if (user.profile) {
+      res.status(400).json({
+        success: false,
+        error: "Profile already exists",
       });
       return;
     }
@@ -104,16 +138,35 @@ export const createProfile = async (req: Request, res: Response) => {
 /**
  * Updates an existing profile for a user.
  *
- * @param req - Express request object containing user
- * @param res - Express response object
- * @returns 200 if successful, 500 if an error occurs
+ * @route PUT /user/profile
+ * @body {string} publicKey - The user's wallet public key.
+ * @body {string} name - Display name for the profile.
+ * @body {number} age - Age of the user.
+ * @body {string} bio - User's bio.
+ * @body {string} gender - User's gender.
+ * @body {string} orientation - User's orientation.
+ * @returns {200} Profile updated successfully. Returns profileId and message.
+ * @returns {404} If user not found.
+ * @returns {500} On error. Returns error message.
  */
 export const updateProfile = async (req: Request, res: Response) => {
-  const { userId, name, age, bio, gender, orientation } = req.body;
+  const { publicKey, name, age, bio, gender, orientation } = req.body;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+      return;
+    }
+
     const profile = await prisma.profile.update({
-      where: { userId },
+      where: { userId: user.id },
       data: {
         displayName: name,
         bio,
@@ -139,65 +192,28 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-// /**
-//  * Fetches all users from the database. NOT NEEDED BY THE NORMAL USERS
-//  *
-//  * @param req - Express request object
-//  * @param res - Express response object
-//  * @returns 200 with the list of users, 500 if an error occurs
-//  */
-// export const getUsers = async (req: Request, res: Response) => {
-//   try {
-//     const users = await prisma.user.findMany({
-//       select: {
-//         id: true,
-//         walletPubKey: true,
-//       },
-//     });
-
-//     res.json({
-//       success: true,
-//       data: users,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching users:", error);
-//     res.status(500).json({
-//       success: false,
-//       error: "Failed to fetch users",
-//     });
-//   }
-// };
-
 /**
- * Fetches a specific user by their ID or wallet public key, including their profile and preferences.
+ * Fetches a specific user by their wallet public key, including their profile and preferences.
  *
- * @param req - Express request object containing the user ID or wallet public key in params
- * @param res - Express response object
- * @returns 200 if user found, 404 if user not found, 500 if an error occurs
+ * @route GET /users/:publicKey
+ * @param {string} publicKey - Wallet public key (in URL params).
+ * @returns {200} User found. Returns user object with profile and preferences.
+ * @returns {404} If user not found.
+ * @returns {500} On error. Returns error message.
  */
 export const getUserById = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { publicKey } = req.params;
+
+  console.log("DEBUG: Fetching user with publicKey:", publicKey);
 
   try {
-    // Try to find user by ID first, then by wallet public key
-    let user = await prisma.user.findUnique({
-      where: { id },
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
       include: {
         profile: true,
         preferences: true,
       },
     });
-
-    // If not found by ID, try wallet public key
-    if (!user) {
-      user = await prisma.user.findUnique({
-        where: { walletPubKey: id },
-        include: {
-          profile: true,
-          preferences: true,
-        },
-      });
-    }
 
     if (!user) {
       res.status(404).json({
@@ -223,25 +239,44 @@ export const getUserById = async (req: Request, res: Response) => {
 /**
  * Sets user preferences for a specific user.
  *
- * @param req - Express request object containing user ID in params and preferences in body
- * @param res - Express response object
- * @returns 200 if successful, 500 if an error occurs
+ * @route POST /user/:publicKey/preferences
+ * @param {string} publicKey - Wallet public key (in URL params).
+ * @body {string[]} preferredGenders - Array of preferred genders.
+ * @body {number} ageMin - Minimum preferred age.
+ * @body {number} ageMax - Maximum preferred age.
+ * @body {number} distanceRange - Maximum distance in km.
+ * @returns {200} Preferences set successfully. Returns preferencesId and message.
+ * @returns {500} On error. Returns error message.
  */
 export const setUserPreferences = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { publicKey } = req.params;
   const { preferredGenders, ageMin, ageMax, distanceRange } = req.body;
 
   try {
-    const preferences = await prisma.preferences.upsert({
-      where: { userId: id },
-      create: {
-        userId: id,
-        preferredGenders,
-        ageMax,
-        ageMin,
-        maxDistanceKm: +distanceRange,
-      },
-      update: {
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+      include: { preferences: true },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+      return;
+    }
+
+    if (user.preferences) {
+      res.status(400).json({
+        success: false,
+        error: "Preferences already exist",
+      });
+      return;
+    }
+
+    const preferences = await prisma.preferences.create({
+      data: {
+        userId: user.id,
         preferredGenders,
         ageMax,
         ageMin,
@@ -268,16 +303,30 @@ export const setUserPreferences = async (req: Request, res: Response) => {
 /**
  * Fetches user preferences for a specific user.
  *
- * @param req - Express request object containing user ID in params
- * @param res - Express response object
- * @returns 200 if successful, 404 if preferences not found, 500 if an error occurs
+ * @route GET /user/:publicKey/preferences
+ * @param {string} publicKey - Wallet public key (in URL params).
+ * @returns {200} Preferences found. Returns preferences object.
+ * @returns {404} If preferences not found.
+ * @returns {500} On error. Returns error message.
  */
 export const getUserPreferences = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { publicKey } = req.params;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+      return;
+    }
+
     const preferences = await prisma.preferences.findUnique({
-      where: { userId: id },
+      where: { userId: user.id },
     });
 
     if (!preferences) {
@@ -302,13 +351,15 @@ export const getUserPreferences = async (req: Request, res: Response) => {
 };
 
 /**
+ * Fetches all available prompts for users to answer.
  *
- * @param req
- * @param res
+ * @route GET /user/:publicKey/prompts
+ * @param {string} publicKey - Wallet public key (in URL params, not used in query).
+ * @returns {200} Returns array of prompts.
+ * @returns {500} On error. Returns error message.
  */
-// getting the prompts to ans on the client side
 export const getPrompts = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { publicKey } = req.params;
 
   try {
     const prompts = await prisma.prompt.findMany({});
@@ -333,28 +384,112 @@ type ansPromptsBody = {
 };
 
 /**
+ * Submits answers to prompts for a user.
  *
- * @param req
- * @param res
+ * @route POST /user/:publicKey/prompts
+ * @param {string} publicKey - Wallet public key (in URL params).
+ * @body {Array<{promptId: string, answer: string}>} answers - Array of prompt answers.
+ * @returns {200} Prompts answered successfully.
+ * @returns {400} If publicKey or answers are invalid.
+ * @returns {500} On error. Returns error message.
  */
 export const ansPrompts = async (req: Request, res: Response) => {
-  const { id } = req.params; // getting the user id
+  const { publicKey } = req.params;
+
+  if (!publicKey || typeof publicKey !== "string") {
+    return res.status(400).json({
+      success: false,
+      error: "Missing or invalid public key",
+    });
+  }
 
   try {
-    // get all the promts from the body
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
     const { answers }: ansPromptsBody = req.body;
 
-    console.log("[DEBUG] User ID:", id);
-    console.log("[DEBUG] answers:", answers);
+    console.log("[DEBUG] Received answers:", answers);
+
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Answers must be a non-empty array",
+      });
+    }
+
+    for (const ans of answers) {
+      if (!ans.promptId || typeof ans.promptId !== "string") {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid promptId in answers",
+        });
+      }
+      if (!ans.answer || typeof ans.answer !== "string") {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid answer in answers",
+        });
+      }
+    }
+
+    const promptsAns = await prisma.promptAnswer.createMany({
+      data: answers.map((ans) => ({
+        answer: ans.answer,
+        promptId: ans.promptId,
+        userId: user.id,
+      })),
+      skipDuplicates: true,
+    });
+
+    console.log("[DEBUG] Prompt answers created:", promptsAns);
 
     res.status(200).json({
       success: true,
       message: "Prompts answered successfully",
     });
   } catch (error) {
+    console.error("Error answering prompts:", error);
     res.status(500).json({
       success: false,
       error: "Failed to ans prompts",
     });
+  }
+};
+
+/**
+ * Gets the next user suggestion for the given user based on preferences.
+ *
+ * @route GET /user/:publicKey/next-suggestion
+ * @param {string} publicKey - Wallet public key (in URL params).
+ * @returns {200} Returns user suggestion and preferences.
+ * @returns {500} On error. Returns error message.
+ */
+export const getNextSuggestion = async (req: Request, res: Response) => {
+  const { publicKey } = req.params;
+
+  try {
+    const userPreferences = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+      include: { preferences: true },
+    });
+
+    console.log({ userPreferences });
+
+    return res.status(200).json({
+      success: true,
+      data: userPreferences,
+      message: "Next suggestion fetched successfully",
+    });
+  } catch (error) {
+    console.error("[Error] ", error);
   }
 };

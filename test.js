@@ -138,13 +138,29 @@ async function testCreateProfile(userId) {
   logStep(3, "Create Profile");
 
   try {
+    // Dynamically use all Gender and Orientation types
+    const GENDERS = ["MALE", "FEMALE", "NON_BINARY", "OTHER"];
+    const ORIENTATIONS = ["STRAIGHT", "GAY", "BISEXUAL", "ASEXUAL", "OTHER"];
+    const randomFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randomAge = () => Math.floor(Math.random() * 50) + 18;
+    const randomHeight = () => Math.floor(Math.random() * 50) + 150;
+    const randomHobbies = () =>
+      ["hiking", "music", "reading", "sports", "coding"]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.floor(Math.random() * 3) + 1);
+
     const profileData = {
       userId: userId,
-      name: "John Doe",
-      age: 25,
+      name: `User${Math.floor(Math.random() * 10000)}`,
+      age: randomAge(),
       bio: "Love hiking and blockchain technology!",
-      gender: "MALE",
-      orientation: "STRAIGHT",
+      gender: randomFrom(GENDERS),
+      orientation: randomFrom(ORIENTATIONS),
+      profession: "Engineer",
+      hobbies: randomHobbies(),
+      religion: randomFrom(["Hindu", "Muslim", "Christian", "None", "Other"]),
+      location: randomFrom(["Delhi", "Mumbai", "Bangalore", "Remote", "Other"]),
+      heightCm: randomHeight(),
     };
 
     const { response, data } = await makeRequest(
@@ -225,8 +241,6 @@ async function testAnsPrompts(userId) {
       };
     });
 
-    console.log({ ans });
-
     const { response, data } = await makeRequest(
       "POST",
       `/api/user/${userId}/prompts`,
@@ -268,12 +282,25 @@ async function testUserPreferences(userId) {
 
   try {
     // Set preferences
+
+    // Dynamically use all Gender types for preferences
+    const GENDERS = ["MALE", "FEMALE", "NON_BINARY", "OTHER"];
+    const randomFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randomAge = () => Math.floor(Math.random() * 50) + 18;
+    const randomAgeMin = () => Math.floor(Math.random() * 10) + 18;
+    const randomAgeMax = (min) => min + Math.floor(Math.random() * 20) + 1;
+    const randomDistance = () => Math.floor(Math.random() * 100) + 1;
+
     const prefData = {
-      preferredGenders: ["FEMALE"],
-      ageMin: 18,
-      ageMax: 30,
-      distanceRange: 50,
+      preferredGenders: GENDERS.sort(() => 0.5 - Math.random()).slice(
+        0,
+        Math.floor(Math.random() * GENDERS.length) + 1
+      ),
+      ageMin: randomAgeMin(),
+      ageMax: undefined,
+      maxDistanceKm: randomDistance(),
     };
+    prefData.ageMax = randomAgeMax(prefData.ageMin);
 
     logInfo("Setting user preferences...");
     const setRes = await makeRequest(
@@ -348,6 +375,9 @@ async function runTests() {
   // Test 8: Ans Prompts to API
   await testAnsPrompts(userId);
 
+  // Test 9: Get Next Suggestion
+  await testGetNextSuggestion(userId);
+
   // Summary
   log(`\n${colors.bold}${colors.green}🎉 Test Suite Completed!${colors.reset}`);
   log("=".repeat(50), colors.green);
@@ -363,6 +393,28 @@ if (process.argv[2]) {
   const customUrl = process.argv[2];
   BASE_URL = customUrl.startsWith("http") ? customUrl : `http://${customUrl}`;
   logInfo(`Using custom server URL: ${BASE_URL}`);
+}
+
+// Test for getNextSuggestion API
+async function testGetNextSuggestion(userId) {
+  logStep(9, "Get Next Suggestion");
+  try {
+    const { response, data } = await makeRequest(
+      "GET",
+      `/api/user/${userId}/next-suggestion`
+    );
+    if (response.ok && data.success) {
+      logSuccess("Next suggestion fetched successfully");
+      logInfo(`Suggestion data: ${JSON.stringify(data.data, null, 2)}`);
+      return true;
+    } else {
+      logError("Failed to fetch next suggestion");
+      return false;
+    }
+  } catch (error) {
+    logError(`Get next suggestion failed: ${error.message}`);
+    return false;
+  }
 }
 
 // Run the tests

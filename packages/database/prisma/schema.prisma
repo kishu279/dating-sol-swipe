@@ -47,7 +47,7 @@ model User {
 model Profile {
   id           String   @id @default(cuid())
   userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   displayName  String
   age          Int
@@ -63,12 +63,14 @@ model Profile {
   @@index([age])
   @@index([gender])
   @@index([location])
+  @@index([orientation])
+
 }
 
 model Preferences {
   id               String   @id @default(cuid())
   userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id])
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   preferredGenders Gender[] @default([])
   ageMin           Int?
@@ -94,8 +96,8 @@ model PromptAnswer {
   answer     String
   createdAt  DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id])
-  prompt     Prompt   @relation(fields: [promptId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt     Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
 
   @@unique([userId, promptId])
 }
@@ -103,7 +105,7 @@ model PromptAnswer {
 model Photo {
   id       String  @id @default(cuid())
   userId   String
-  user     User    @relation(fields: [userId], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   url      String
   order    Int
 
@@ -116,8 +118,8 @@ model Like {
   toUserId     String
   createdAt    DateTime @default(now())
 
-  fromUser     User     @relation("UserLikes", fields: [fromUserId], references: [id])
-  toUser       User     @relation("UserLikedBy", fields: [toUserId], references: [id])
+  fromUser     User     @relation("UserLikes", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser       User     @relation("UserLikedBy", fields: [toUserId], references: [id], onDelete: Cascade)
 
   @@unique([fromUserId, toUserId])
   @@index([toUserId])

@@ -1,0 +1,12 @@
+{
+  "name": "testing-env",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated testing environment for packages",
+  "scripts": {
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
