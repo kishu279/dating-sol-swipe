@@ -1,0 +1,33 @@
+Deploying cluster: https://api.devnet.solana.com
+Upgrade authority: /home/kishu/.config/solana/id.json
+Deploying program "escrow_sol_dating"...
+Program path: /home/kishu/Desktop/kishu-codes/escrow-sol-dating/target/deploy/escrow_sol_dating.so...
+Program Id: 3rUhRXxZJgjnGcfFuRdK1iAEhccW9pPMDfNSjZryzzRX
+
+Signature: ZmE8Mu2reBQ4yRwDodo2rKxGGR7AYX3W1wVfjNo4oRPjnCQgq3hUzoZEcQRnCM3q5t7T89RCg5xuZQ7oGohXCHe
+
+Waiting for program 3rUhRXxZJgjnGcfFuRdK1iAEhccW9pPMDfNSjZryzzRX to be confirmed...
+Program confirmed on-chain
+Idl data length: 1014 bytes
+Step 0/1014 
+Step 600/1014 
+Idl account 3yCC7Ccs5CmnUDQk6y6k5rknAyYDzAVZmcYkhDvVtvJ3 successfully upgraded
+Deploy success
+
+// next time deployed with some changes on deposit insturction
+❯ anchor deploy
+Deploying cluster: https://api.devnet.solana.com
+Upgrade authority: /home/kishu/.config/solana/id.json
+Deploying program "escrow_sol_dating"...
+Program path: /home/kishu/Desktop/kishu-codes/escrow-sol-dating/target/deploy/escrow_sol_dating.so...
+Program Id: 3rUhRXxZJgjnGcfFuRdK1iAEhccW9pPMDfNSjZryzzRX
+
+Signature: 2AtWrvw5G4cEUPT6gKRLxdQNmFoFbsySyMLfCZVLuhFmnMDwzgAUZijZeFbz8TWaCpuXkgTZDQZXfn9853edhPph
+
+Waiting for program 3rUhRXxZJgjnGcfFuRdK1iAEhccW9pPMDfNSjZryzzRX to be confirmed...
+Program confirmed on-chain
+Idl data length: 1014 bytes
+Step 0/1014 
+Step 600/1014 
+Idl account 3yCC7Ccs5CmnUDQk6y6k5rknAyYDzAVZmcYkhDvVtvJ3 successfully upgraded
+Deploy success

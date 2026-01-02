@@ -67,15 +67,7 @@ export const createUser = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const createProfile = async (req: Request, res: Response) => {
-  const { publicKey, name, age, bio, gender, orientation } = req.body;
-  console.log("DEBUG: Creating profile for:", {
-    publicKey,
-    name,
-    age,
-    bio,
-    gender,
-    orientation,
-  });
+  const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, location, profession, religion } = req.body;
 
   try {
     if (!publicKey) {
@@ -115,6 +107,11 @@ export const createProfile = async (req: Request, res: Response) => {
         age,
         gender,
         orientation,
+        heightCm,
+        hobbies,
+        location,
+        profession,
+        religion,
       },
     });
 
@@ -150,7 +147,7 @@ export const createProfile = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const updateProfile = async (req: Request, res: Response) => {
-  const { publicKey, name, age, bio, gender, orientation } = req.body;
+  const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, location, profession, religion } = req.body;
 
   try {
     const user = await prisma.user.findUnique({
@@ -173,6 +170,11 @@ export const updateProfile = async (req: Request, res: Response) => {
         age,
         gender,
         orientation,
+        heightCm,
+        hobbies,
+        location,
+        profession,
+        religion,
       },
     });
 
