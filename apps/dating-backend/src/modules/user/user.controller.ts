@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
+import { MOCK_DATA, type ScrollDataType } from "../../../constants/scroll-data";
 
 /**
  * Creates a new user in the database with the provided wallet public key.
@@ -476,22 +477,30 @@ export const ansPrompts = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const getNextSuggestion = async (req: Request, res: Response) => {
-  const { publicKey } = req.params;
+  // const { publicKey } = req.params;
+  console.log("Payment Api Called")
 
   try {
-    const userPreferences = await prisma.user.findUnique({
-      where: { walletPubKey: publicKey },
-      include: { preferences: true },
-    });
+    // get the next suggestion
+    const scrollData: ScrollDataType = MOCK_DATA.at(Math.floor(Math.random() * MOCK_DATA.length))!
 
-    console.log({ userPreferences });
+    if (!scrollData) {
+      return res.status(400).json({
+        success: false,
+        message: "internal server error"
+      })
+    }
 
     return res.status(200).json({
       success: true,
-      data: userPreferences,
       message: "Next suggestion fetched successfully",
-    });
+      data: scrollData
+    })
   } catch (error) {
     console.error("[Error] ", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to get next suggestion",
+    })
   }
 };

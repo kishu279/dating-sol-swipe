@@ -4,9 +4,17 @@
   "private": true,
   "description": "Isolated testing environment for packages",
   "scripts": {
-    "test": "bun test"
+    "test": "bun test",
+    "test:payment": "bun run x402-payment-test.ts"
   },
   "devDependencies": {
     "bun-types": "latest"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "@x402/paywall": "^2.1.0",
+    "@x402/svm": "^2.1.0",
+    "dotenv": "^17.2.3"
   }
 }

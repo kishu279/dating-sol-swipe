@@ -1,0 +1,15 @@
+# Environment files
+.env
+
+# Wallet files (contains private keys)
+test-wallet.json
+*.wallet.json
+
+# OS files
+.DS_Store
+
+# Node modules (handled by workspace)
+node_modules/
+
+# Test outputs
+*.log
