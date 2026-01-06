@@ -4,17 +4,23 @@
 
 ---
 
-## Health Check
+## Quick Reference
 
-### `GET /api/health`
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Server and database are healthy"
-}
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/user` | Create user |
+| `GET` | `/user/:publicKey` | Get user details |
+| `POST` | `/user/profile` | Create profile |
+| `PUT` | `/user/profile` | Update profile |
+| `POST` | `/user/:publicKey/preferences` | Set preferences |
+| `GET` | `/user/:publicKey/preferences` | Get preferences |
+| `GET` | `/user/:publicKey/prompts` | Get available prompts |
+| `POST` | `/user/:publicKey/prompts` | Submit prompt answers |
+| `GET` | `/user/:publicKey/next-suggestion` | Get next match suggestion |
+| `POST` | `/user/:publicKey/like` | Like a user |
+| `GET` | `/user/:publicKey/likes` | Get received likes |
+| `GET` | `/user/:publicKey/matches` | Get matches |
 
 ---
 
@@ -23,38 +29,23 @@
 ### `POST /api/user`
 Create a new user
 
-**Request Body:**
+**Request:**
 ```json
-{
-  "walletPublicKey": "string"
-}
+{ "walletPublicKey": "string" }
 ```
 
 **Response (201):**
 ```json
 {
   "success": true,
-  "data": {
-    "userId": "string",
-    "message": "User created successfully"
-  }
-}
-```
-
-**Error (400):**
-```json
-{
-  "success": false,
-  "error": "User already exists"
+  "data": { "userId": "string", "message": "User created successfully" }
 }
 ```
 
 ---
 
 ### `GET /api/user/:publicKey`
-Get user details with profile and preferences
-
-**URL Params:** `publicKey` - Wallet public key
+Get user with profile and preferences
 
 **Response (200):**
 ```json
@@ -64,37 +55,30 @@ Get user details with profile and preferences
     "id": "string",
     "walletPubKey": "string",
     "isActive": true,
-    "createdAt": "ISO8601",
-    "updatedAt": "ISO8601",
+    "isVerified": false,
+    "isPremium": false,
+    "lastActiveAt": "ISO8601",
     "profile": {
-      "id": "string",
       "displayName": "string",
       "age": 25,
+      "gender": "MALE | FEMALE | NON_BINARY | OTHER",
+      "orientation": "string",
       "bio": "string",
-      "gender": "MALE|FEMALE|NON_BINARY",
-      "orientation": "MEN|WOMEN|EVERYONE",
-      "heightCm": 175,
-      "hobbies": ["string"],
-      "location": "string",
       "profession": "string",
-      "religion": "string"
+      "hobbies": ["string"],
+      "religion": "string",
+      "country": "string",
+      "state": "string",
+      "city": "string",
+      "heightCm": 175
     },
     "preferences": {
-      "id": "string",
-      "preferredGenders": ["MALE|FEMALE|NON_BINARY"],
+      "preferredGenders": ["MALE", "FEMALE"],
       "ageMin": 21,
       "ageMax": 30,
-      "maxDistanceKm": 50
+      "locationScope": "SAME_CITY | SAME_STATE | SAME_COUNTRY | ANY"
     }
   }
-}
-```
-
-**Error (404):**
-```json
-{
-  "success": false,
-  "error": "User not found"
 }
 ```
 
@@ -105,20 +89,22 @@ Get user details with profile and preferences
 ### `POST /api/user/profile`
 Create user profile
 
-**Request Body:**
+**Request:**
 ```json
 {
   "publicKey": "string",
   "name": "string",
-  "age": "number",
+  "age": 25,
   "bio": "string",
-  "gender": "MALE|FEMALE|NON_BINARY",
-  "orientation": "MEN|WOMEN|EVERYONE",
-  "heightCm": "number",
-  "hobbies": ["string"],
-  "location": "string",
-  "profession": "string",
-  "religion": "string"
+  "gender": "MALE | FEMALE | NON_BINARY | OTHER",
+  "orientation": "string",
+  "heightCm": 175,
+  "hobbies": ["Reading", "Travel"],
+  "country": "India",
+  "state": "Maharashtra",
+  "city": "Mumbai",
+  "profession": "Software Engineer",
+  "religion": "Hindu"
 }
 ```
 
@@ -126,52 +112,24 @@ Create user profile
 ```json
 {
   "success": true,
-  "data": {
-    "profileId": "string",
-    "message": "Profile created successfully"
-  }
+  "data": { "profileId": "string", "message": "Profile created successfully" }
 }
 ```
 
-**Error (400):**
-```json
-{
-  "success": false,
-  "error": "Profile already exists"
-}
-```
-
-**Error (404):**
-```json
-{
-  "success": false,
-  "error": "User not found"
-}
-```
+**Errors:** `400` Profile already exists, `404` User not found
 
 ---
 
 ### `PUT /api/user/profile`
 Update user profile
 
-**Request Body:** Same as POST `/api/user/profile`
+**Request:** Same as POST
 
 **Response (200):**
 ```json
 {
   "success": true,
-  "data": {
-    "profileId": "string",
-    "message": "Profile updated successfully"
-  }
-}
-```
-
-**Error (404):**
-```json
-{
-  "success": false,
-  "error": "User not found"
+  "data": { "profileId": "string", "message": "Profile updated successfully" }
 }
 ```
 
@@ -180,44 +138,31 @@ Update user profile
 ## Preferences
 
 ### `POST /api/user/:publicKey/preferences`
-Set user matching preferences
+Set matching preferences
 
-**URL Params:** `publicKey` - Wallet public key
-
-**Request Body:**
+**Request:**
 ```json
 {
-  "preferredGenders": ["MALE|FEMALE|NON_BINARY"],
-  "ageMin": "number",
-  "ageMax": "number",
-  "distanceRange": "number"
+  "preferredGenders": ["MALE", "FEMALE"],
+  "ageMin": 21,
+  "ageMax": 30,
+  "locationScope": "SAME_STATE"
 }
 ```
+
+**locationScope values:**
+| Value | Description |
+|-------|-------------|
+| `SAME_CITY` | Only users in same city |
+| `SAME_STATE` | Users in same state (default) |
+| `SAME_COUNTRY` | Users anywhere in country |
+| `ANY` | No location filter |
 
 **Response (200):**
 ```json
 {
   "success": true,
-  "data": {
-    "preferencesId": "string",
-    "message": "User preferences set successfully"
-  }
-}
-```
-
-**Error (400):**
-```json
-{
-  "success": false,
-  "error": "Preferences already exist"
-}
-```
-
-**Error (404):**
-```json
-{
-  "success": false,
-  "error": "User not found"
+  "data": { "preferencesId": "string", "message": "User preferences set successfully" }
 }
 ```
 
@@ -226,30 +171,17 @@ Set user matching preferences
 ### `GET /api/user/:publicKey/preferences`
 Get user preferences
 
-**URL Params:** `publicKey` - Wallet public key
-
 **Response (200):**
 ```json
 {
   "success": true,
   "data": {
     "id": "string",
-    "userId": "string",
-    "preferredGenders": ["MALE|FEMALE|NON_BINARY"],
-    "ageMin": "number",
-    "ageMax": "number",
-    "maxDistanceKm": "number",
-    "createdAt": "ISO8601",
-    "updatedAt": "ISO8601"
+    "preferredGenders": ["MALE", "FEMALE"],
+    "ageMin": 21,
+    "ageMax": 30,
+    "locationScope": "SAME_STATE"
   }
-}
-```
-
-**Error (404):**
-```json
-{
-  "success": false,
-  "error": "User not found or preferences not found"
 }
 ```
 
@@ -260,8 +192,6 @@ Get user preferences
 ### `GET /api/user/:publicKey/prompts`
 Get all available prompts
 
-**URL Params:** `publicKey` - Wallet public key
-
 **Response (200):**
 ```json
 {
@@ -269,8 +199,9 @@ Get all available prompts
   "data": [
     {
       "id": "string",
-      "text": "string",
-      "createdAt": "ISO8601"
+      "question": "Two truths and a lie — go.",
+      "category": "FUN | LIFESTYLE | VALUES | ICEBREAKER",
+      "order": 1
     }
   ]
 }
@@ -281,52 +212,26 @@ Get all available prompts
 ### `POST /api/user/:publicKey/prompts`
 Submit prompt answers
 
-**URL Params:** `publicKey` - Wallet public key
-
-**Request Body:**
+**Request:**
 ```json
 {
   "answers": [
-    {
-      "promptId": "string",
-      "answer": "string"
-    }
+    { "promptId": "string", "answer": "My answer text" }
   ]
 }
 ```
 
 **Response (200):**
 ```json
-{
-  "success": true,
-  "message": "Prompts answered successfully"
-}
-```
-
-**Error (400):**
-```json
-{
-  "success": false,
-  "error": "Invalid publicKey or answers format"
-}
-```
-
-**Error (404):**
-```json
-{
-  "success": false,
-  "error": "User not found"
-}
+{ "success": true, "message": "Prompts answered successfully" }
 ```
 
 ---
 
-## Next Suggestion (Paid)
+## Suggestions
 
 ### `GET /api/user/:publicKey/next-suggestion`
-Get next matching user - requires Solana payment verification
-
-**URL Params:** `publicKey` - Wallet public key
+Get next matching user based on preferences
 
 **Response (200):**
 ```json
@@ -335,32 +240,146 @@ Get next matching user - requires Solana payment verification
   "data": {
     "id": "string",
     "walletPubKey": "string",
-    "preferences": {
-      "preferredGenders": ["MALE|FEMALE|NON_BINARY"],
-      "ageMin": "number",
-      "ageMax": "number",
-      "maxDistanceKm": "number"
-    }
-  },
-  "message": "Next suggestion fetched successfully"
+    "profile": {
+      "displayName": "string",
+      "age": 25,
+      "gender": "FEMALE",
+      "orientation": "Heterosexual",
+      "bio": "string",
+      "profession": "string",
+      "hobbies": ["Reading"],
+      "religion": "string",
+      "country": "India",
+      "state": "Maharashtra",
+      "city": "Mumbai",
+      "heightCm": 165
+    },
+    "photos": [
+      { "url": "https://...", "order": 0 }
+    ],
+    "promptAnswers": [
+      {
+        "answer": "My answer",
+        "prompt": { "question": "Two truths and a lie" }
+      }
+    ]
+  }
 }
 ```
 
-**Error (402):**
+**Response (200) - No more suggestions:**
 ```json
 {
-  "error": "Payment required to access this resource.",
-  "message": "Payment verification failed."
+  "success": true,
+  "data": null,
+  "message": "No more suggestions available"
 }
 ```
 
 ---
 
+## Likes
+
+### `POST /api/user/:publicKey/like`
+Like another user (creates match if mutual)
+
+**Request:**
+```json
+{ "toWhom": "target_wallet_public_key" }
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "User liked successfully",
+  "isMatch": false,
+  "likeId": "string"
+}
+```
+
+**Response (200) - Match!:**
+```json
+{
+  "success": true,
+  "message": "It's a match! 🎉",
+  "isMatch": true,
+  "likeId": "string"
+}
+```
+
+---
+
+### `GET /api/user/:publicKey/likes`
+Get all likes received
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "count": 5,
+  "data": [
+    {
+      "likeId": "string",
+      "likedAt": "ISO8601",
+      "user": {
+        "id": "string",
+        "walletPubKey": "string",
+        "displayName": "string",
+        "profileImage": "https://..."
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Matches
+
+### `GET /api/user/:publicKey/matches`
+Get all mutual matches
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "matchId": "string",
+      "matchedAt": "ISO8601",
+      "user": {
+        "id": "string",
+        "walletPubKey": "string",
+        "displayName": "string",
+        "profileImage": "https://...",
+        "profile": { ... }
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Enums Reference
+
+| Field | Values |
+|-------|--------|
+| `gender` | `MALE`, `FEMALE`, `NON_BINARY`, `OTHER` |
+| `locationScope` | `SAME_CITY`, `SAME_STATE`, `SAME_COUNTRY`, `ANY` |
+| `promptCategory` | `FUN`, `LIFESTYLE`, `VALUES`, `ICEBREAKER` |
+
+---
+
 ## Status Codes
 
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `402` - Payment Required
-- `404` - Not Found
-- `500` - Server Error
+| Code | Meaning |
+|------|---------|
+| `200` | Success |
+| `201` | Created |
+| `400` | Bad Request / Validation Error |
+| `404` | Not Found |
+| `409` | Conflict (duplicate) |
+| `500` | Server Error |

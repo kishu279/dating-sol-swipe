@@ -10,9 +10,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
@@ -25,10 +23,7 @@
   },
   "dependencies": {
     "@types/cors": "^2.8.19",
-    "cors": "^2.8.5",
-    "expo": "~54.0.30",
-    "react": "19.1.0",
-    "react-native": "0.81.5"
+    "cors": "^2.8.5"
   },
   "version": "1.0.0"
 }

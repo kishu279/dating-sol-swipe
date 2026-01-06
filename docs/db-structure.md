@@ -1,330 +1,207 @@
-
----
-
-# 📘 Dating App Database Documentation (Phase-1)
+# 📘 Dating App Database Documentation
 
 ## 1. System Overview
 
-This database supports a **wallet-based dating application** with the following principles:
+This database supports a **wallet-based dating application** with:
 
-* **Identity is wallet-based** (Solana public key)
-* **All user profile data is stored off-chain**
-* **Admin controls personality prompts**
-* **Users may optionally answer prompts**
-* **Swipes are stored as likes**
-* **Mutual likes imply a match**
-* Messaging, payments, and AI scoring are intentionally excluded in Phase-1
-
-The schema is designed to be:
-
-* Read-optimized for swipe queries
-* Easy to evolve for AI matching
-* Compatible with mobile-first UX (Hinge-style)
+* **Wallet-based identity** (Solana public key)
+* **Location-based matching** (country/state/city)
+* **Swipe tracking** (like/pass to exclude already-seen users)
+* **Activity-based suggestions** (recently active users first)
 
 ---
 
-## 2. Identity & Authentication Model
+## 2. Quick Reference
 
-### Key Concept
-
-A **User** is uniquely identified by a **wallet public key**.
-
-* No email
-* No password
-* No OAuth
-* Authentication is done via **signed wallet messages** (outside DB scope)
-
----
-
-## 3. Entity Definitions
-
----
-
-## 🧑 User
-
-### Purpose
-
-Represents a unique account tied to a wallet.
-
-### Key Properties
-
-| Field          | Meaning                         |
-| -------------- | ------------------------------- |
-| `walletPubKey` | Unique identity (Solana wallet) |
-| `isActive`     | Soft delete / ban support       |
-| `createdAt`    | Account creation timestamp      |
-
-### Rules
-
-* One wallet = one user
-* User may exist **without a profile** initially
-* User owns all related records
-
-### Relations
-
-* 1 → 1 Profile (optional)
-* 1 → 1 Preferences (optional)
-* 1 → many Photos
-* 1 → many PromptAnswers
-* 1 → many Likes (given & received)
+| Model | Purpose |
+|-------|---------|
+| **User** | Core account, wallet identity |
+| **Profile** | Dating profile info (displayed on cards) |
+| **Preferences** | Matching filters |
+| **Photo** | Profile images |
+| **Prompt** | Admin-created questions |
+| **PromptAnswer** | User's answers to prompts |
+| **Like** | When user likes someone |
+| **Swipe** | All swipe actions (like/pass) |
+| **Matches** | Mutual likes |
 
 ---
 
-## 👤 Profile
+## 3. Entity Details
 
-### Purpose
+### 🧑 User
 
-Stores **public dating profile information**.
-
-### Display Scope
-
-This data is shown on:
-
-* Swipe cards
-* Match previews
-* Profile view
-
-### Key Properties
-
-| Field         | Meaning             |
-| ------------- | ------------------- |
-| `displayName` | Public name         |
-| `age`         | Used for matching   |
-| `gender`      | Enum                |
-| `orientation` | Free text (Phase-1) |
-| `bio`         | Short description   |
-| `hobbies[]`   | Used for matching   |
-| `location`    | City / region       |
-
-### Rules
-
-* Each user has **at most one profile**
-* Profile must exist before user can swipe
-* Indexed for matching queries
+| Field | Type | Description |
+|-------|------|-------------|
+| `walletPubKey` | String | Unique Solana wallet (identity) |
+| `isActive` | Boolean | Account status |
+| `isVerified` | Boolean | Verified user badge |
+| `isPremium` | Boolean | Premium subscription |
+| `lastActiveAt` | DateTime? | For sorting suggestions |
 
 ---
 
-## ⚙️ Preferences
+### 👤 Profile
 
-### Purpose
-
-Defines **who the user wants to see**.
-
-### Matching Scope
-
-Used when generating swipe suggestions.
-
-### Key Properties
-
-| Field                | Meaning         |
-| -------------------- | --------------- |
-| `preferredGenders[]` | Gender filter   |
-| `ageMin / ageMax`    | Age range       |
-| `maxDistanceKm`      | Distance filter |
-
-### Rules
-
-* Preferences are optional
-* Defaults are applied at API level
-* No hard constraints enforced in DB
+| Field | Type | Description |
+|-------|------|-------------|
+| `displayName` | String | Name shown on cards |
+| `age` | Int | User's age |
+| `gender` | Enum | MALE, FEMALE, NON_BINARY, OTHER |
+| `orientation` | String | Sexual orientation |
+| `bio` | String? | Short description |
+| `profession` | String? | Job/profession |
+| `hobbies` | String[] | Array of interests |
+| `religion` | String? | Religious preference |
+| `country` | String? | e.g., "India" |
+| `state` | String? | e.g., "Maharashtra" |
+| `city` | String? | e.g., "Mumbai" |
+| `heightCm` | Int? | Height in cm |
 
 ---
 
-## 🧩 Prompt (Admin-Controlled)
+### ⚙️ Preferences
 
-### Purpose
-
-Represents **personality questions**, similar to Hinge.
-
-### Ownership
-
-* Created and managed **only by admin**
-* Users cannot create or modify prompts
-
-### Key Properties
-
-| Field      | Meaning            |
-| ---------- | ------------------ |
-| `question` | Prompt text        |
-| `category` | FUN / VALUES / etc |
-| `isActive` | Visibility toggle  |
-| `order`    | Display ordering   |
-
-### Rules
-
-* Prompts are immutable once published
-* Admin may deactivate prompts
-* Prompts are reused across all users
+| Field | Type | Description |
+|-------|------|-------------|
+| `preferredGenders` | Gender[] | Who to show |
+| `ageMin` | Int? | Minimum age |
+| `ageMax` | Int? | Maximum age |
+| `locationScope` | Enum | SAME_CITY, SAME_STATE, SAME_COUNTRY, ANY |
 
 ---
 
-## ✍️ PromptAnswer
+### 👆 Swipe (NEW)
 
-### Purpose
+Tracks all swipe actions to prevent re-showing users.
 
-Stores a **user’s answer to a specific prompt**.
-
-### Usage
-
-* Displayed on swipe cards
-* Used for conversation starters
-* Used later for AI matching
-
-### Key Properties
-
-| Field      | Meaning           |
-| ---------- | ----------------- |
-| `userId`   | Owner             |
-| `promptId` | Referenced prompt |
-| `answer`   | Short free text   |
-
-### Constraints
-
-* A user can answer **a prompt only once**
-* User may skip prompts
-* Max number of answers enforced in API (not DB)
+| Field | Type | Description |
+|-------|------|-------------|
+| `fromUserId` | String | Who swiped |
+| `toUserId` | String | Who was swiped on |
+| `action` | Enum | LIKE or PASS |
+| `createdAt` | DateTime | When swiped |
 
 ---
 
-## 🖼️ Photo
+### 🖼️ Photo
 
-### Purpose
-
-Stores profile images.
-
-### Display
-
-Used in:
-
-* Swipe cards
-* Profile gallery
-
-### Key Properties
-
-| Field   | Meaning        |
-| ------- | -------------- |
-| `url`   | Image location |
-| `order` | Display order  |
-
-### Rules
-
-* At least one photo required to swipe (API rule)
-* Order determines primary photo
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | String | Image URL |
+| `order` | Int | Display order (0 = primary) |
 
 ---
 
-## ❤️ Like
+### 🧩 Prompt
 
-### Purpose
+| Field | Type | Description |
+|-------|------|-------------|
+| `question` | String | The question text |
+| `category` | Enum | FUN, LIFESTYLE, VALUES, ICEBREAKER |
+| `isActive` | Boolean | Available to users |
+| `order` | Int | Display order |
 
-Represents a **swipe right**.
+---
 
-### Matching Logic
+### ✍️ PromptAnswer
 
-* If A likes B AND B likes A → match exists
+| Field | Type | Description |
+|-------|------|-------------|
+| `promptId` | String | Which prompt |
+| `answer` | String | User's answer |
 
-### Key Properties
+---
 
-| Field        | Meaning       |
-| ------------ | ------------- |
-| `fromUserId` | Who liked     |
-| `toUserId`   | Who was liked |
-| `createdAt`  | Time of swipe |
+### ❤️ Like
 
-### Constraints
+| Field | Type | Description |
+|-------|------|-------------|
+| `fromUserId` | String | Who liked |
+| `toUserId` | String | Who was liked |
 
-* One like per user pair
-* Duplicate likes are prevented
+---
 
-### Rules
+### 💕 Matches
 
-* No explicit Match table in Phase-1
-* Matches are computed dynamically
+Created when both users like each other (mutual like).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `firstPersonId` | String | First user |
+| `secondPersonId` | String | Second user |
 
 ---
 
 ## 4. Enums
 
 ### Gender
+```
+MALE, FEMALE, NON_BINARY, OTHER
+```
 
-```txt
-MALE
-FEMALE
-NON_BINARY
-OTHER
+### LocationScope
+```
+SAME_CITY     - Match only same city
+SAME_STATE    - Match same state (default)
+SAME_COUNTRY  - Match anywhere in country
+ANY           - No location filter
+```
+
+### SwipeAction
+```
+LIKE, PASS
 ```
 
 ### PromptCategory
-
-```txt
-FUN
-LIFESTYLE
-VALUES
-ICEBREAKER
+```
+FUN, LIFESTYLE, VALUES, ICEBREAKER
 ```
 
-Enums ensure consistency and avoid free-text bugs.
+---
+
+## 5. Relationships
+
+```
+User (1) ←→ (1) Profile
+User (1) ←→ (1) Preferences
+User (1) ←→ (N) Photo
+User (1) ←→ (N) PromptAnswer
+User (1) ←→ (N) Like
+User (1) ←→ (N) Swipe
+User (1) ←→ (N) Matches
+```
 
 ---
 
-## 5. What This Database Does NOT Handle
+## 6. Location Validation
 
-Intentionally excluded from Phase-1:
+Locations are validated against a constants file.
 
-* Messaging
-* Reactions/comments on prompts
-* AI scoring tables
-* On-chain data
-* Payment/subscription tracking
-* Admin authentication tables
+**File:** `apps/dating-backend/src/constants/locations.ts`
 
-These will be layered later.
+**Supported Countries:** India, USA, UK, Canada, Australia
 
 ---
 
-## 6. Data Flow Summary (LLM-Friendly)
+## 7. Matching Logic (getNextSuggestion)
 
-1. User connects wallet → User row created
-2. User fills profile → Profile row created
-3. Admin seeds prompts → Prompt rows exist
-4. User answers prompts → PromptAnswer rows created
-5. User swipes → Like rows created
-6. Mutual likes → Match inferred at query time
-
----
-
-## 7. Design Guarantees
-
-This schema guarantees:
-
-* No duplicate likes
-* No duplicate prompt answers
-* Clear admin vs user ownership
-* Query-friendly matching
-* Safe incremental evolution
+1. Get user's preferences and profile
+2. Exclude already-swiped users (from Swipe table)
+3. Filter by:
+   - Preferred genders
+   - Age range
+   - Location scope
+4. Order by: Premium first, then most recently active
+5. Return first candidate
 
 ---
 
-## 8. Instructions for LLM Usage
+## 8. File Locations
 
-When reasoning about this schema, assume:
-
-* Wallet public key is the primary identity
-* Profiles are optional but required for swipe
-* Prompts are static global data
-* Prompt answers are sparse
-* Matches are inferred, not stored
-
----
-
-## 9. Phase-1 Status
-
-**This schema is final for Phase-1.**
-No migrations required until:
-
-* Messaging
-* AI ranking
-* Payments
-* On-chain anchoring
-
----
+| Purpose | Path |
+|---------|------|
+| Schema | `packages/database/prisma/schema.prisma` |
+| Client | `packages/database/src/client.ts` |
+| Seed Data | `packages/database/prisma/seed-data.json` |
+| Migrations | `packages/database/prisma/migrations/` |

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
 import { MOCK_DATA, type ScrollDataType } from "../../../constants/scroll-data";
+import { validateLocation, isValidCountry, isValidState } from "../../constants/locations";
 
 /**
  * Creates a new user in the database with the provided wallet public key.
@@ -68,7 +69,7 @@ export const createUser = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const createProfile = async (req: Request, res: Response) => {
-  const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, location, profession, religion } = req.body;
+  const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, country, state, city, profession, religion } = req.body;
 
   try {
     if (!publicKey) {
@@ -77,6 +78,18 @@ export const createProfile = async (req: Request, res: Response) => {
         error: "publicKey is required",
       });
       return;
+    }
+
+    // Validate location if provided
+    if (country && state) {
+      const locationValidation = validateLocation(country, state);
+      if (!locationValidation.valid) {
+        res.status(400).json({
+          success: false,
+          error: locationValidation.error,
+        });
+        return;
+      }
     }
 
     const user = await prisma.user.findUnique({
@@ -110,7 +123,9 @@ export const createProfile = async (req: Request, res: Response) => {
         orientation,
         heightCm,
         hobbies,
-        location,
+        country,
+        state,
+        city,
         profession,
         religion,
       },
@@ -148,9 +163,21 @@ export const createProfile = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const updateProfile = async (req: Request, res: Response) => {
-  const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, location, profession, religion } = req.body;
+  const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, country, state, city, profession, religion } = req.body;
 
   try {
+    // Validate location if provided
+    if (country && state) {
+      const locationValidation = validateLocation(country, state);
+      if (!locationValidation.valid) {
+        res.status(400).json({
+          success: false,
+          error: locationValidation.error,
+        });
+        return;
+      }
+    }
+
     const user = await prisma.user.findUnique({
       where: { walletPubKey: publicKey },
     });
@@ -173,7 +200,9 @@ export const updateProfile = async (req: Request, res: Response) => {
         orientation,
         heightCm,
         hobbies,
-        location,
+        country,
+        state,
+        city,
         profession,
         religion,
       },
@@ -477,30 +506,395 @@ export const ansPrompts = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const getNextSuggestion = async (req: Request, res: Response) => {
-  // const { publicKey } = req.params;
-  console.log("Payment Api Called")
+  const { publicKey } = req.params;
 
   try {
-    // get the next suggestion
-    const scrollData: ScrollDataType = MOCK_DATA.at(Math.floor(Math.random() * MOCK_DATA.length))!
+    // Get the current user with preferences and profile
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+      include: {
+        preferences: true,
+        profile: true,
+        swipesGiven: { select: { toUserId: true } }, // Get already swiped users
+      }
+    });
 
-    if (!scrollData) {
+    if (!user) {
       return res.status(400).json({
         success: false,
-        message: "internal server error"
-      })
+        message: "User not found"
+      });
     }
 
+    if (!user.profile) {
+      return res.status(400).json({
+        success: false,
+        message: "User profile not found. Please create a profile first."
+      });
+    }
+
+    // Get IDs of users already swiped
+    const swipedUserIds = user.swipesGiven.map(s => s.toUserId);
+
+    // Build location filter based on preference scope
+    const locationFilter: any = {};
+    if (user.preferences?.locationScope && user.profile) {
+      switch (user.preferences.locationScope) {
+        case 'SAME_CITY':
+          if (user.profile.city) locationFilter.city = user.profile.city;
+          if (user.profile.state) locationFilter.state = user.profile.state;
+          if (user.profile.country) locationFilter.country = user.profile.country;
+          break;
+        case 'SAME_STATE':
+          if (user.profile.state) locationFilter.state = user.profile.state;
+          if (user.profile.country) locationFilter.country = user.profile.country;
+          break;
+        case 'SAME_COUNTRY':
+          if (user.profile.country) locationFilter.country = user.profile.country;
+          break;
+        case 'ANY':
+          // No location filter
+          break;
+      }
+    }
+
+    // Find candidate users
+    const candidates = await prisma.user.findMany({
+      where: {
+        id: { not: user.id, notIn: swipedUserIds }, // Exclude self and already swiped
+        isActive: true,
+        profile: {
+          // Gender filter
+          ...(user.preferences?.preferredGenders?.length > 0
+            ? { gender: { in: user.preferences.preferredGenders } }
+            : {}),
+          // Age filter
+          ...(user.preferences?.ageMin || user.preferences?.ageMax
+            ? {
+              age: {
+                gte: user.preferences?.ageMin ?? 18,
+                lte: user.preferences?.ageMax ?? 100
+              }
+            }
+            : {}),
+          // Location filter
+          ...locationFilter
+        }
+      },
+      include: {
+        profile: true,
+        photos: { orderBy: { order: 'asc' } },
+        promptAnswers: { include: { prompt: true }, take: 3 }
+      },
+      orderBy: [
+        { isPremium: 'desc' },      // Premium users first
+        { lastActiveAt: 'desc' },   // Then most recently active
+      ],
+      take: 1
+    });
+
+    // Update current user's lastActiveAt
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastActiveAt: new Date() }
+    });
+
+    if (candidates.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: "No more suggestions available"
+      });
+    }
+
+    const suggestion = candidates[0];
     return res.status(200).json({
       success: true,
-      message: "Next suggestion fetched successfully",
-      data: scrollData
-    })
+      data: {
+        id: suggestion.id,
+        walletPubKey: suggestion.walletPubKey,
+        profile: suggestion.profile,
+        photos: suggestion.photos,
+        promptAnswers: suggestion.promptAnswers,
+      }
+    });
   } catch (error) {
     console.error("[Error] ", error);
     return res.status(500).json({
       success: false,
       error: "Failed to get next suggestion",
     })
+  }
+};
+
+
+/**
+ * Creates a like from one user to another. Detects mutual match and creates Match record.
+ *
+ * @route POST /user/:publicKey/like
+ * @param {string} publicKey - The liker's wallet public key (in URL params).
+ * @body {string} toWhom - The wallet public key of the user being liked.
+ * @returns {200} Like created successfully. Returns isMatch status.
+ * @returns {400} If trying to like self or missing toWhom.
+ * @returns {404} If either user not found.
+ * @returns {409} If like already exists.
+ * @returns {500} On error.
+ */
+export const likeUser = async (req: Request, res: Response) => {
+  const { publicKey } = req.params;
+  const { toWhom }: { toWhom: string } = req.body;
+
+  try {
+    // Validate input
+    if (!toWhom) {
+      return res.status(400).json({
+        success: false,
+        error: "toWhom (target publicKey) is required",
+      });
+    }
+
+    if (publicKey === toWhom) {
+      return res.status(400).json({
+        success: false,
+        error: "Cannot like yourself",
+      });
+    }
+
+    // Find the current user (from)
+    const fromUser = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+    });
+
+    if (!fromUser) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Find the target user (to)
+    const toUser = await prisma.user.findUnique({
+      where: { walletPubKey: toWhom },
+    });
+
+    if (!toUser) {
+      return res.status(404).json({
+        success: false,
+        error: "Target user not found",
+      });
+    }
+
+    // Check if like already exists
+    const existingLike = await prisma.like.findUnique({
+      where: {
+        fromUserId_toUserId: {
+          fromUserId: fromUser.id,
+          toUserId: toUser.id,
+        },
+      },
+    });
+
+    if (existingLike) {
+      return res.status(409).json({
+        success: false,
+        error: "You have already liked this user",
+      });
+    }
+
+    // Create the like
+    const like = await prisma.like.create({
+      data: {
+        fromUserId: fromUser.id,
+        toUserId: toUser.id,
+      },
+    });
+
+    // Check if the other user has already liked this user (mutual match)
+    const mutualLike = await prisma.like.findUnique({
+      where: {
+        fromUserId_toUserId: {
+          fromUserId: toUser.id,
+          toUserId: fromUser.id,
+        },
+      },
+    });
+
+    const isMatch = !!mutualLike;
+
+    // If mutual match, create a Matches record
+    if (isMatch) {
+      // Check if match record already exists (in either direction)
+      const existingMatch = await prisma.matches.findFirst({
+        where: {
+          OR: [
+            { firstPersonId: fromUser.id, secondPersonId: toUser.id },
+            { firstPersonId: toUser.id, secondPersonId: fromUser.id },
+          ],
+        },
+      });
+
+      if (!existingMatch) {
+        await prisma.matches.create({
+          data: {
+            firstPersonId: fromUser.id,
+            secondPersonId: toUser.id,
+          },
+        });
+        console.log(`[MATCH] 🎉 New match created: ${publicKey} <-> ${toWhom}`);
+      }
+    }
+
+    console.log(`[LIKE] ${publicKey} liked ${toWhom}. Match: ${isMatch}`);
+
+    return res.status(200).json({
+      success: true,
+      message: isMatch ? "It's a match! 🎉" : "User liked successfully",
+      isMatch,
+      likeId: like.id,
+    });
+  } catch (error) {
+    console.error("Error liking user:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to like user",
+    });
+  }
+};
+
+/**
+ * Gets all likes received by a user (people who liked them).
+ *
+ * @route GET /user/:publicKey/likes
+ * @param {string} publicKey - The user's wallet public key (in URL params).
+ * @returns {200} Returns count and list of users who liked this user.
+ * @returns {404} If user not found.
+ * @returns {500} On error.
+ */
+export const getLikes = async (req: Request, res: Response) => {
+  const { publicKey } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Get all likes received by this user
+    const receivedLikes = await prisma.like.findMany({
+      where: { toUserId: user.id },
+      include: {
+        fromUser: {
+          include: {
+            profile: true,
+            photos: { orderBy: { order: "asc" }, take: 1 },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: receivedLikes.length,
+      data: receivedLikes.map((like) => ({
+        likeId: like.id,
+        likedAt: like.createdAt,
+        user: {
+          id: like.fromUser.id,
+          walletPubKey: like.fromUser.walletPubKey,
+          displayName: like.fromUser.profile?.displayName ?? "Anonymous",
+          profileImage: like.fromUser.photos[0]?.url ?? null,
+        },
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching likes:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch likes",
+    });
+  }
+};
+
+/**
+ * Gets all mutual matches for a user.
+ *
+ * @route GET /user/:publicKey/matches
+ * @param {string} publicKey - The user's wallet public key (in URL params).
+ * @returns {200} Returns count and list of matched users.
+ * @returns {404} If user not found.
+ * @returns {500} On error.
+ */
+export const getMatches = async (req: Request, res: Response) => {
+  const { publicKey } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { walletPubKey: publicKey },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Get all matches where this user is either firstPerson or secondPerson
+    const matches = await prisma.matches.findMany({
+      where: {
+        OR: [{ firstPersonId: user.id }, { secondPersonId: user.id }],
+      },
+      include: {
+        firstPerson: {
+          include: {
+            profile: true,
+            photos: { orderBy: { order: "asc" }, take: 1 },
+          },
+        },
+        secondPerson: {
+          include: {
+            profile: true,
+            photos: { orderBy: { order: "asc" }, take: 1 },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Return the OTHER person in each match
+    return res.status(200).json({
+      success: true,
+      count: matches.length,
+      data: matches.map((match) => {
+        const otherUser =
+          match.firstPersonId === user.id
+            ? match.secondPerson
+            : match.firstPerson;
+        return {
+          matchId: match.id,
+          matchedAt: match.createdAt,
+          user: {
+            id: otherUser.id,
+            walletPubKey: otherUser.walletPubKey,
+            displayName: otherUser.profile?.displayName ?? "Anonymous",
+            profileImage: otherUser.photos[0]?.url ?? null,
+            profile: otherUser.profile,
+          },
+        };
+      }),
+    });
+  } catch (error) {
+    console.error("Error fetching matches:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch matches",
+    });
   }
 };

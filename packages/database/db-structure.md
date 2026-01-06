@@ -67,6 +67,7 @@ Represents a unique account tied to a wallet.
 * 1 → many Photos
 * 1 → many PromptAnswers
 * 1 → many Likes (given & received)
+* 1 → many Matches (as first or second person)
 
 ---
 
@@ -239,7 +240,7 @@ Represents a **swipe right**.
 ### Rules
 
 * No explicit Match table in Phase-1
-* Matches are computed dynamically
+* Matches are now stored explicitly in Matches table
 
 ---
 
@@ -289,7 +290,7 @@ These will be layered later.
 3. Admin seeds prompts → Prompt rows exist
 4. User answers prompts → PromptAnswer rows created
 5. User swipes → Like rows created
-6. Mutual likes → Match inferred at query time
+6. Mutual likes → Matches row created automatically
 
 ---
 
@@ -313,7 +314,7 @@ When reasoning about this schema, assume:
 * Profiles are optional but required for swipe
 * Prompts are static global data
 * Prompt answers are sparse
-* Matches are inferred, not stored
+* Matches are stored explicitly in Matches table
 
 ---
 

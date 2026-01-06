@@ -1,0 +1,738 @@
+{
+  "users": [
+    {
+      "walletPubKey": "wallet_priya_sharma_001",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Priya Sharma",
+        "age": 26,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "Software engineer by day, classical dancer by night. Love chai and good conversations.",
+        "profession": "Software Engineer",
+        "hobbies": ["Classical Dance", "Reading", "Cooking"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 162
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 26,
+        "ageMax": 34,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 1, "answer": "I've met Shah Rukh Khan. I can code in 5 languages. I've never had coffee. (The lie? I'm a coffee addict!)" },
+        { "promptOrder": 7, "answer": "...you can make me laugh during a boring meeting without getting caught." },
+        { "promptOrder": 16, "answer": "Respect for family and ambition. I need someone who has goals." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_rahul_verma_002",
+      "isVerified": true,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Rahul Verma",
+        "age": 29,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Startup founder, cricket enthusiast. Looking for someone to share sunsets and samosas with.",
+        "profession": "Entrepreneur",
+        "hobbies": ["Cricket", "Startups", "Travel"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Pune",
+        "heightCm": 178
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 24,
+        "ageMax": 30,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 2, "answer": "Quit my MNC job and started a company from my hostel room. Best decision ever." },
+        { "promptOrder": 8, "answer": "Good pani puri and even better conversation. Simple things matter." },
+        { "promptOrder": 14, "answer": "Building the business plan. And probably the app too." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_ananya_patel_003",
+      "isVerified": false,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Ananya Patel",
+        "age": 24,
+        "gender": "FEMALE",
+        "orientation": "Bisexual",
+        "bio": "Medical student surviving on coffee and hope. Dog mom. Bollywood enthusiast.",
+        "profession": "Medical Student",
+        "hobbies": ["Movies", "Dogs", "Photography"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Gujarat",
+        "city": "Ahmedabad",
+        "heightCm": 158
+      },
+      "preferences": {
+        "preferredGenders": ["MALE", "FEMALE"],
+        "ageMin": 23,
+        "ageMax": 30,
+        "locationScope": "SAME_COUNTRY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 5, "answer": "My dog judging me for crying during a Bollywood movie. He looked so confused!" },
+        { "promptOrder": 10, "answer": "I will probably diagnose you with something. Sorry in advance." },
+        { "promptOrder": 15, "answer": "Rewatching DDLJ for the 50th time with chai and pakoras." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_arjun_mehta_004",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Arjun Mehta",
+        "age": 31,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Investment banker trying to find work-life balance. Weekend trekker. Foodie.",
+        "profession": "Investment Banker",
+        "hobbies": ["Trekking", "Finance", "Wine"],
+        "religion": "Jain",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 175
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 26,
+        "ageMax": 32,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 6, "answer": "Early morning trek, brunch at a café, and then doing absolutely nothing." },
+        { "promptOrder": 11, "answer": "A glass of wine and some jazz. Simple but effective." },
+        { "promptOrder": 19, "answer": "Being each other's peace after a chaotic day at work." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_sneha_reddy_005",
+      "isVerified": false,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Sneha Reddy",
+        "age": 27,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "Content creator and travel blogger. Always planning the next adventure.",
+        "profession": "Content Creator",
+        "hobbies": ["Travel", "Vlogging", "Yoga"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Karnataka",
+        "city": "Bangalore",
+        "heightCm": 165
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 27,
+        "ageMax": 35,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 2, "answer": "Solo trip to Ladakh on a Royal Enfield. 15 days of pure freedom." },
+        { "promptOrder": 4, "answer": "Getting the perfect Instagram shot. Yes, I'll make you wait for it." },
+        { "promptOrder": 18, "answer": "The freedom to work from anywhere and explore new places." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_vikram_singh_006",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Vikram Singh",
+        "age": 33,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Army officer. Disciplined but fun. Looking for someone who appreciates structure and spontaneity.",
+        "profession": "Army Officer",
+        "hobbies": ["Fitness", "Shooting", "Reading"],
+        "religion": "Sikh",
+        "country": "India",
+        "state": "Punjab",
+        "city": "Chandigarh",
+        "heightCm": 183
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 26,
+        "ageMax": 32,
+        "locationScope": "SAME_COUNTRY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 12, "answer": "0500 morning runs. The discipline is addictive." },
+        { "promptOrder": 16, "answer": "Loyalty and honesty. In my profession, these aren't optional." },
+        { "promptOrder": 20, "answer": "Being more emotionally available. The uniform doesn't help with that." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_kavya_nair_007",
+      "isVerified": false,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Kavya Nair",
+        "age": 25,
+        "gender": "FEMALE",
+        "orientation": "Homosexual",
+        "bio": "Kathakali dancer turned contemporary artist. Looking for my person.",
+        "profession": "Dance Instructor",
+        "hobbies": ["Dance", "Art", "Music"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Kerala",
+        "city": "Kochi",
+        "heightCm": 160
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 23,
+        "ageMax": 30,
+        "locationScope": "SAME_COUNTRY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 3, "answer": "Performing in front of large crowds. Give me a small audience any day." },
+        { "promptOrder": 9, "answer": "Someone who asked about my dance rather than my height. Refreshing!" },
+        { "promptOrder": 17, "answer": "When someone shows genuine interest in understanding your art." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_aditya_kumar_008",
+      "isVerified": true,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Aditya Kumar",
+        "age": 28,
+        "gender": "MALE",
+        "orientation": "Homosexual",
+        "bio": "Fashion designer based in Delhi. Creating art one stitch at a time.",
+        "profession": "Fashion Designer",
+        "hobbies": ["Fashion", "Art", "Theatre"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Delhi",
+        "city": "New Delhi",
+        "heightCm": 172
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 25,
+        "ageMax": 35,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 1, "answer": "I've dressed a Bollywood star. I hate shopping. I can sew faster than I type. (The lie? I love shopping!)" },
+        { "promptOrder": 7, "answer": "...you appreciate the difference between navy and royal blue." },
+        { "promptOrder": 11, "answer": "Sketching new designs with lo-fi playing in the background." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_riya_sharma_009",
+      "isVerified": false,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Riya Sharma",
+        "age": 23,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "College student with too many hobbies. Anime enthusiast. Future psychologist.",
+        "profession": "Psychology Student",
+        "hobbies": ["Anime", "Psychology", "Gaming"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 155
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 23,
+        "ageMax": 28,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1503185912284-5271ff81b9a8?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 4, "answer": "Anime trivia. I will destroy you in any quiz." },
+        { "promptOrder": 13, "answer": "We're in a complicated relationship. Screen time reports are scary." },
+        { "promptOrder": 15, "answer": "Binge-watching anime with snacks and no responsibilities." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_karan_malhotra_010",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Karan Malhotra",
+        "age": 30,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Chef and restaurant owner. Will cook for you on the first date.",
+        "profession": "Chef",
+        "hobbies": ["Cooking", "Wine", "Travel"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 176
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 25,
+        "ageMax": 32,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 8, "answer": "Through my food. Seriously, my butter chicken has ended arguments." },
+        { "promptOrder": 6, "answer": "Farmers market in the morning, cooking experiments, and a movie night." },
+        { "promptOrder": 10, "answer": "I will judge your spice tolerance. This is non-negotiable." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_meera_iyer_011",
+      "isVerified": true,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Meera Iyer",
+        "age": 29,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "Lawyer who believes in justice and good coffee. Weekend painter.",
+        "profession": "Corporate Lawyer",
+        "hobbies": ["Art", "Reading", "Coffee"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Karnataka",
+        "city": "Bangalore",
+        "heightCm": 167
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 29,
+        "ageMax": 38,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 14, "answer": "Drafting the legal framework of our island society. Someone has to." },
+        { "promptOrder": 19, "answer": "Respecting each other's space while still being each other's biggest fans." },
+        { "promptOrder": 5, "answer": "Opposing counsel mispronouncing 'habeas corpus'. I still giggle thinking about it." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_rohan_gupta_012",
+      "isVerified": false,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Rohan Gupta",
+        "age": 26,
+        "gender": "MALE",
+        "orientation": "Bisexual",
+        "bio": "Musician and music producer. Creating beats and looking for harmony.",
+        "profession": "Music Producer",
+        "hobbies": ["Music", "DJing", "Concerts"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 170
+      },
+      "preferences": {
+        "preferredGenders": ["MALE", "FEMALE"],
+        "ageMin": 22,
+        "ageMax": 30,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1463453091185-61582044d556?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 2, "answer": "Performed at a music festival with zero rehearsal. Pure adrenaline." },
+        { "promptOrder": 11, "answer": "Creating music at 2 AM. The night is when creativity hits differently." },
+        { "promptOrder": 17, "answer": "When someone actually listens to the lyrics, not just the beat." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_pooja_desai_013",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Pooja Desai",
+        "age": 28,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "Architect designing dreams. Love old buildings and new ideas.",
+        "profession": "Architect",
+        "hobbies": ["Architecture", "Photography", "History"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Gujarat",
+        "city": "Ahmedabad",
+        "heightCm": 163
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 28,
+        "ageMax": 36,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 3, "answer": "Bad architecture. Seriously, some buildings give me anxiety." },
+        { "promptOrder": 6, "answer": "Heritage walk in the old city, followed by dinner at a rooftop café." },
+        { "promptOrder": 18, "answer": "The chance to design buildings that will outlive me." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_siddharth_joshi_014",
+      "isVerified": false,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Siddharth Joshi",
+        "age": 32,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Doctor working in public health. Trying to make a difference, one patient at a time.",
+        "profession": "Doctor",
+        "hobbies": ["Medicine", "Running", "Podcasts"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Pune",
+        "heightCm": 180
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 26,
+        "ageMax": 32,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1556157382-97edd3f93255?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1512484776495-a09d92e87c3b?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 12, "answer": "Better sleep hygiene. Ironic for a doctor, I know." },
+        { "promptOrder": 16, "answer": "Empathy. The world needs more of it." },
+        { "promptOrder": 20, "answer": "Work-life balance. Still figuring it out." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_nisha_kapoor_015",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Nisha Kapoor",
+        "age": 27,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "HR professional who actually cares. Weekend baker. Dog person.",
+        "profession": "HR Manager",
+        "hobbies": ["Baking", "Dogs", "Hiking"],
+        "religion": "Sikh",
+        "country": "India",
+        "state": "Delhi",
+        "city": "New Delhi",
+        "heightCm": 161
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 27,
+        "ageMax": 35,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1464863979621-258859e62245?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 8, "answer": "Homemade brownies. I don't make the rules." },
+        { "promptOrder": 10, "answer": "I will probably remember your birthday before you do." },
+        { "promptOrder": 15, "answer": "Baking something new while my dog supervises from his bed." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_amit_saxena_016",
+      "isVerified": false,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Amit Saxena",
+        "age": 29,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Stand-up comedian. Will make you laugh. Will also steal your jokes.",
+        "profession": "Stand-up Comedian",
+        "hobbies": ["Comedy", "Writing", "Netflix"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 174
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 24,
+        "ageMax": 32,
+        "locationScope": "SAME_STATE"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 5, "answer": "A heckler who thought he was funnier than me. Spoiler: he wasn't." },
+        { "promptOrder": 7, "answer": "...you laugh at my jokes. Even the bad ones. Especially the bad ones." },
+        { "promptOrder": 9, "answer": "'Your Netflix special was mid.' Brutal but honest. Married her." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_tanya_bhatia_017",
+      "isVerified": true,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Tanya Bhatia",
+        "age": 26,
+        "gender": "NON_BINARY",
+        "orientation": "Pansexual",
+        "bio": "Graphic designer and tattoo enthusiast. Expressing myself one design at a time.",
+        "profession": "Graphic Designer",
+        "hobbies": ["Design", "Tattoos", "Music"],
+        "religion": "None",
+        "country": "India",
+        "state": "Karnataka",
+        "city": "Bangalore",
+        "heightCm": 168
+      },
+      "preferences": {
+        "preferredGenders": ["MALE", "FEMALE", "NON_BINARY"],
+        "ageMin": 23,
+        "ageMax": 32,
+        "locationScope": "SAME_COUNTRY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 1, "answer": "I have 12 tattoos. I once designed a logo for Google. I'm allergic to cats. (Lie: I love cats and have two!)" },
+        { "promptOrder": 4, "answer": "Color theory debates. I will die on the hill that coral and salmon are different." },
+        { "promptOrder": 17, "answer": "When someone respects your pronouns without making it weird." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_varun_menon_018",
+      "isVerified": false,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Varun Menon",
+        "age": 30,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Data scientist crunching numbers by day, playing guitar by night.",
+        "profession": "Data Scientist",
+        "hobbies": ["Guitar", "Data Science", "Chess"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Karnataka",
+        "city": "Bangalore",
+        "heightCm": 177
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 25,
+        "ageMax": 32,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 4, "answer": "Chess. I've lost friends over en passant moves." },
+        { "promptOrder": 11, "answer": "Playing guitar covers of old Hindi songs. Very therapeutic." },
+        { "promptOrder": 13, "answer": "My screen time report says 6 hours. We're working on it." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_shruti_grover_019",
+      "isVerified": true,
+      "isPremium": false,
+      "profile": {
+        "displayName": "Shruti Grover",
+        "age": 25,
+        "gender": "FEMALE",
+        "orientation": "Heterosexual",
+        "bio": "Journalist covering stories that matter. Chai over coffee, always.",
+        "profession": "Journalist",
+        "hobbies": ["Writing", "Current Affairs", "Chai"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Delhi",
+        "city": "New Delhi",
+        "heightCm": 159
+      },
+      "preferences": {
+        "preferredGenders": ["MALE"],
+        "ageMin": 25,
+        "ageMax": 33,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1485893086445-ed75865251e0?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1469460340997-2f854421e72f?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 2, "answer": "Flew to a conflict zone for a story. Mom still doesn't know." },
+        { "promptOrder": 16, "answer": "Truth and integrity. My profession demands it, and so do I." },
+        { "promptOrder": 19, "answer": "Being each other's safe space to decompress after hard days." }
+      ]
+    },
+    {
+      "walletPubKey": "wallet_raj_choudhary_020",
+      "isVerified": true,
+      "isPremium": true,
+      "profile": {
+        "displayName": "Raj Choudhary",
+        "age": 35,
+        "gender": "MALE",
+        "orientation": "Heterosexual",
+        "bio": "Architect and furniture designer. Building beautiful spaces and looking for beautiful connections.",
+        "profession": "Architect",
+        "hobbies": ["Design", "Woodworking", "Travel"],
+        "religion": "Hindu",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "heightCm": 181
+      },
+      "preferences": {
+        "preferredGenders": ["FEMALE"],
+        "ageMin": 28,
+        "ageMax": 35,
+        "locationScope": "SAME_CITY"
+      },
+      "photos": [
+        { "url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300", "order": 0 },
+        { "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300", "order": 1 }
+      ],
+      "promptAnswers": [
+        { "promptOrder": 14, "answer": "Building actual shelter. I've got the skills." },
+        { "promptOrder": 6, "answer": "Morning at the workshop, afternoon exploring a new neighborhood, dinner at home." },
+        { "promptOrder": 18, "answer": "The ability to create things with my hands that will last generations." }
+      ]
+    }
+  ],
+  "_metadata": {
+    "description": "Seed data for testing with 20 diverse Indian users. Includes various genders, orientations, professions, and location scopes.",
+    "schemaVersion": "2.0",
+    "fields": {
+      "User": ["walletPubKey", "isVerified", "isPremium"],
+      "Profile": ["displayName", "age", "gender", "orientation", "bio", "profession", "hobbies", "religion", "country", "state", "city", "heightCm"],
+      "Preferences": ["preferredGenders", "ageMin", "ageMax", "locationScope"]
+    },
+    "locationScopes": {
+      "SAME_CITY": "Match only users in the same city",
+      "SAME_STATE": "Match users in the same state",
+      "SAME_COUNTRY": "Match users anywhere in the country",
+      "ANY": "No location filtering"
+    },
+    "promptOrderMapping": {
+      "1": "Two truths and a lie — go.",
+      "2": "The most spontaneous thing I've ever done is…",
+      "3": "My most irrational fear is…",
+      "4": "I'm weirdly competitive about…",
+      "5": "The last thing that made me laugh way too hard was…",
+      "6": "A perfect Sunday for me looks like…",
+      "7": "I'll fall for you if…",
+      "8": "The quickest way to my heart is…",
+      "9": "The best first message I've ever received was…",
+      "10": "One thing you should know about me is…",
+      "11": "My ideal way to unwind after a long day is…",
+      "12": "A habit I'm trying to build right now is…",
+      "13": "My relationship with my phone is best described as…",
+      "14": "If we were stranded on an island, I'd be responsible for…",
+      "15": "My go-to comfort activity is…",
+      "16": "A value I won't compromise on is…",
+      "17": "A green flag I look for in people is…",
+      "18": "Something I'm genuinely grateful for is…",
+      "19": "The hallmark of a healthy relationship is…",
+      "20": "Something I'm currently working on about myself is…"
+    },
+    "testingNotes": {
+      "locationDistribution": {
+        "Maharashtra": ["Mumbai (6)", "Pune (2)"],
+        "Karnataka": ["Bangalore (4)"],
+        "Delhi": ["New Delhi (3)"],
+        "Gujarat": ["Ahmedabad (2)"],
+        "Punjab": ["Chandigarh (1)"],
+        "Kerala": ["Kochi (1)"]
+      },
+      "genderDistribution": {
+        "MALE": 10,
+        "FEMALE": 9,
+        "NON_BINARY": 1
+      },
+      "premiumUsers": 6,
+      "verifiedUsers": 12
+    }
+  }
+}

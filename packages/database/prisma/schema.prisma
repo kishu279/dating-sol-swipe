@@ -33,6 +33,10 @@ model User {
   isActive         Boolean     @default(true)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
+  lastActiveAt     DateTime?   // For sorting suggestions by activity
+
+  isVerified   Boolean @default(false)
+  isPremium    Boolean @default(false)
 
   profile          Profile?
   preferences      Preferences?
@@ -40,8 +44,13 @@ model User {
   likesGiven       Like[]      @relation("UserLikes")
   likesReceived    Like[]      @relation("UserLikedBy")
   promptAnswers    PromptAnswer[]
+  matchesAsFirst   Matches[]   @relation("MatchFirst")
+  matchesAsSecond  Matches[]   @relation("MatchSecond")
+  swipesGiven      Swipe[]     @relation("UserSwipes")
+  swipesReceived   Swipe[]     @relation("UserSwipedOn")
 
   @@index([walletPubKey])
+  @@index([lastActiveAt])
 }
 
 model Profile {
@@ -57,25 +66,34 @@ model Profile {
   profession   String?
   hobbies      String[] @default([])
   religion     String?
-  location     String?
+  country      String?  // e.g., "India"
+  state        String?  // e.g., "Maharashtra"
+  city         String?  // e.g., "Mumbai" (optional, for display)
   heightCm     Int?
 
   @@index([age])
   @@index([gender])
-  @@index([location])
+  @@index([country])
+  @@index([state])
   @@index([orientation])
+}
 
+enum LocationScope {
+  SAME_CITY
+  SAME_STATE
+  SAME_COUNTRY
+  ANY
 }
 
 model Preferences {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String        @id @default(cuid())
+  userId                String        @unique
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  preferredGenders Gender[] @default([])
-  ageMin           Int?
-  ageMax           Int?
-  maxDistanceKm    Int?
+  preferredGenders      Gender[]      @default([])
+  ageMin                Int?
+  ageMax                Int?
+  locationScope         LocationScope @default(SAME_STATE)  // How far to search
 }
 
 model Prompt {
@@ -125,6 +143,25 @@ model Like {
   @@index([toUserId])
 }
 
+enum SwipeAction {
+  LIKE
+  PASS
+}
+
+model Swipe {
+  id         String      @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  action     SwipeAction
+  createdAt  DateTime    @default(now())
+
+  fromUser   User        @relation("UserSwipes", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User        @relation("UserSwipedOn", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId])
+}
+
 // model Message {
 //   id              String   @id @default(cuid())
 //   fromUserId      String
@@ -135,3 +172,15 @@ model Like {
 //   fromUser        User     @relation("SentMessages", fields: [fromUserId], references: [id])
 //   toUser          User     @relation("ReceivedMessages", fields: [toUserId], references: [id])
 // }
+
+model Matches {
+  id             String   @id @default(cuid())
+  firstPersonId  String
+  secondPersonId String
+  createdAt      DateTime @default(now())
+
+  firstPerson    User     @relation("MatchFirst", fields: [firstPersonId], references: [id], onDelete: Cascade)
+  secondPerson   User     @relation("MatchSecond", fields: [secondPersonId], references: [id], onDelete: Cascade)
+
+  @@unique([firstPersonId, secondPersonId])
+}

@@ -25,32 +25,33 @@ const facilitatorClient = new HTTPFacilitatorClient({
 const server = new x402ResourceServer(facilitatorClient);
 registerExactSvmScheme(server);
 
-router.use(
-  paymentMiddleware(
-    {
-      "GET /user/next-suggestion": {
-        accepts: [
-          {
-            scheme: "exact",
-            price: "$0.1",
-            network: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
-            payTo: walletAddress,
-            extra: {
-              asset: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC devnet token mint
-            },
-          },
-        ],
-        description: "Get the new suggestions according to the preferences",
-        mimeType: "application/json",
-      },
-    },
-    server
-  )
-);
+// router.use(
+//   paymentMiddleware(
+//     {
+//       "GET /user/next-suggestion": {
+//         accepts: [
+//           {
+//             scheme: "exact",
+//             price: "$0.1",
+//             network: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+//             payTo: walletAddress,
+//             extra: {
+//               asset: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC devnet token mint
+//             },
+//           },
+//         ],
+//         description: "Get the new suggestions according to the preferences",
+//         mimeType: "application/json",
+//       },
+//     },
+//     server
+//   )
+// );
 
 // Get the next suggestion - protected by payment middleware
+
 router.get(
-  "/user/next-suggestion",
+  "/user/:publicKey/next-suggestion",
   userController.getNextSuggestion
 );
 
@@ -64,6 +65,11 @@ router.get("/user/:publicKey/preferences", userController.getUserPreferences);
 // User prompts
 router.get("/user/:publicKey/prompts", userController.getPrompts);
 router.post("/user/:publicKey/prompts", userController.ansPrompts);
+
+// Like and Match routes
+router.post("/user/:publicKey/like", userController.likeUser);
+router.get("/user/:publicKey/likes", userController.getLikes);
+router.get("/user/:publicKey/matches", userController.getMatches);
 
 export default router;
 
