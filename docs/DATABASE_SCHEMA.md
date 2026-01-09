@@ -35,6 +35,9 @@ model User {
   matchesAsSecond  Matches[]   @relation("MatchSecond")     // Matches where user is second
   swipesGiven      Swipe[]     @relation("UserSwipes")      // Swipes this user made
   swipesReceived   Swipe[]     @relation("UserSwipedOn")    // Swipes received
+
+  @@index([walletPubKey])
+  @@index([lastActiveAt])
 }
 ```
 
@@ -44,10 +47,12 @@ model User {
 |-------|------|-------------|
 | `id` | String | Unique identifier (CUID) |
 | `walletPubKey` | String | Unique Solana wallet address (indexed) |
-| `isActive` | Boolean | Account status |
+| `isActive` | Boolean | Account status (default: true) |
+| `createdAt` | DateTime | Account creation timestamp |
+| `updatedAt` | DateTime | Last update timestamp (auto) |
 | `lastActiveAt` | DateTime? | Last activity timestamp (for suggestion sorting) |
-| `isVerified` | Boolean | User verification status |
-| `isPremium` | Boolean | Premium subscription status |
+| `isVerified` | Boolean | User verification status (default: false) |
+| `isPremium` | Boolean | Premium subscription status (default: false) |
 
 ---
 
@@ -59,7 +64,7 @@ Stores user's personal and dating profile information.
 model Profile {
   id           String   @id @default(cuid())
   userId       String   @unique              // One-to-one relationship
-  user         User     @relation(...)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   displayName  String                        // Display name
   age          Int                           // Age (indexed for search)
@@ -73,24 +78,31 @@ model Profile {
   state        String?                       // State/Region (indexed) e.g., "Maharashtra"
   city         String?                       // City (optional) e.g., "Mumbai"
   heightCm     Int?                          // Height in cm (optional)
+
+  @@index([age])
+  @@index([gender])
+  @@index([country])
+  @@index([state])
+  @@index([orientation])
 }
 ```
 
-**Location Fields:**
-- `country` - User's country (validated against constants)
-- `state` - User's state/region (validated against country)
-- `city` - User's city (optional, for display)
+**Fields:**
 
-**Enums:**
-
-```prisma
-enum Gender {
-  MALE
-  FEMALE
-  NON_BINARY
-  OTHER
-}
-```
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `displayName` | String | ✅ | User's display name |
+| `age` | Int | ✅ | User's age in years |
+| `gender` | Gender | ✅ | User's gender (enum) |
+| `orientation` | String | ✅ | Sexual orientation |
+| `bio` | String? | ❌ | Profile biography |
+| `profession` | String? | ❌ | Job/profession |
+| `hobbies` | String[] | ❌ | Array of hobby strings |
+| `religion` | String? | ❌ | Religion |
+| `country` | String? | ❌ | Country (validated) |
+| `state` | String? | ❌ | State/Region (validated) |
+| `city` | String? | ❌ | City |
+| `heightCm` | Int? | ❌ | Height in centimeters |
 
 ---
 
@@ -102,7 +114,7 @@ Stores user's matching preferences and filters.
 model Preferences {
   id               String        @id @default(cuid())
   userId           String        @unique
-  user             User          @relation(...)
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   preferredGenders Gender[]      @default([])     // Array of preferred genders
   ageMin           Int?                           // Minimum age preference
@@ -111,22 +123,20 @@ model Preferences {
 }
 ```
 
-**Location Scope Enum:**
+**Fields:**
 
-```prisma
-enum LocationScope {
-  SAME_CITY     // Match only users in same city
-  SAME_STATE    // Match users in same state (default)
-  SAME_COUNTRY  // Match users in same country
-  ANY           // No location filtering
-}
-```
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `preferredGenders` | Gender[] | [] | Preferred gender(s) for matching |
+| `ageMin` | Int? | null | Minimum age preference |
+| `ageMax` | Int? | null | Maximum age preference |
+| `locationScope` | LocationScope | SAME_STATE | How far to search for matches |
 
 ---
 
-### **Swipe Model** (NEW)
+### **Swipe Model**
 
-Tracks all swipe actions (likes and passes) to prevent re-showing users.
+Tracks all swipe actions (likes and passes). This is the primary model for all swipe interactions.
 
 ```prisma
 model Swipe {
@@ -136,23 +146,20 @@ model Swipe {
   action     SwipeAction                      // LIKE or PASS
   createdAt  DateTime    @default(now())
 
-  fromUser   User        @relation("UserSwipes", ...)
-  toUser     User        @relation("UserSwipedOn", ...)
+  fromUser   User        @relation("UserSwipes", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User        @relation("UserSwipedOn", fields: [toUserId], references: [id], onDelete: Cascade)
 
   @@unique([fromUserId, toUserId])            // One swipe per user pair
   @@index([toUserId])
 }
-
-enum SwipeAction {
-  LIKE    // User liked the profile
-  PASS    // User passed/rejected the profile
-}
 ```
 
 **Purpose:**
+- Tracks all user swipe actions (LIKE and PASS)
 - Prevents showing already-swiped users in suggestions
-- Distinguishes between likes and passes for analytics
-- Used by `getNextSuggestion` to filter candidates
+- Used to get "who liked me" list (filter by action=LIKE)
+- Match detection: mutual swipes where both are LIKE
+- Future: Can add REPORT action for blocking users
 
 ---
 
@@ -164,9 +171,11 @@ Stores user profile photos.
 model Photo {
   id       String  @id @default(cuid())
   userId   String                               // Many-to-one with User
-  user     User    @relation(...)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   url      String                               // Photo URL
-  order    Int                                  // Display order (1 = primary)
+  order    Int                                  // Display order (0 = primary)
+
+  @@index([userId])
 }
 ```
 
@@ -187,13 +196,6 @@ model Prompt {
 
   answers     PromptAnswer[]                    // User answers
 }
-
-enum PromptCategory {
-  FUN
-  LIFESTYLE
-  VALUES
-  ICEBREAKER
-}
 ```
 
 ---
@@ -210,8 +212,8 @@ model PromptAnswer {
   answer     String                             // User's answer
   createdAt  DateTime @default(now())
 
-  user       User     @relation(...)
-  prompt     Prompt   @relation(...)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt     Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
 
   @@unique([userId, promptId])                  // One answer per prompt per user
 }
@@ -230,8 +232,8 @@ model Like {
   toUserId     String                           // User who was liked
   createdAt    DateTime @default(now())
 
-  fromUser     User     @relation("UserLikes", ...)
-  toUser       User     @relation("UserLikedBy", ...)
+  fromUser     User     @relation("UserLikes", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser       User     @relation("UserLikedBy", fields: [toUserId], references: [id], onDelete: Cascade)
 
   @@unique([fromUserId, toUserId])              // Prevent duplicate likes
   @@index([toUserId])                           // Index for received likes
@@ -242,7 +244,7 @@ model Like {
 
 ### **Matches Model**
 
-Stores mutual matches between users. Created when both users like each other.
+Stores mutual matches between users. Created when both users swipe LIKE on each other.
 
 ```prisma
 model Matches {
@@ -251,8 +253,8 @@ model Matches {
   secondPersonId String                         // Second user in the match
   createdAt      DateTime @default(now())
 
-  firstPerson    User     @relation("MatchFirst", ...)
-  secondPerson   User     @relation("MatchSecond", ...)
+  firstPerson    User     @relation("MatchFirst", fields: [firstPersonId], references: [id], onDelete: Cascade)
+  secondPerson   User     @relation("MatchSecond", fields: [secondPersonId], references: [id], onDelete: Cascade)
 
   @@unique([firstPersonId, secondPersonId])     // One match per user pair
 }
@@ -262,18 +264,72 @@ model Matches {
 
 ## Database Relationships Diagram
 
+```mermaid
+erDiagram
+    User ||--o| Profile : has
+    User ||--o| Preferences : has
+    User ||--o{ Photo : has
+    User ||--o{ PromptAnswer : submits
+    User ||--o{ Like : gives
+    User ||--o{ Like : receives
+    User ||--o{ Swipe : makes
+    User ||--o{ Swipe : receives
+    User ||--o{ Matches : participates
+    Prompt ||--o{ PromptAnswer : answered_by
+```
+
 ```
 User (1) ←→ (1) Profile
 User (1) ←→ (1) Preferences
 User (1) ←→ (N) Photo
 User (1) ←→ (N) PromptAnswer
-User (1) ←→ (N) Like (as fromUser)
-User (1) ←→ (N) Like (as toUser)
-User (1) ←→ (N) Swipe (as fromUser)
-User (1) ←→ (N) Swipe (as toUser)
+User (1) ←→ (N) Swipe (as fromUser - swipes given)
+User (1) ←→ (N) Swipe (as toUser - swipes received / who liked me)
 User (1) ←→ (N) Matches (as firstPerson)
 User (1) ←→ (N) Matches (as secondPerson)
 Prompt (1) ←→ (N) PromptAnswer
+```
+
+---
+
+## Enums
+
+### Gender
+```typescript
+enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  NON_BINARY = 'NON_BINARY',
+  OTHER = 'OTHER'
+}
+```
+
+### LocationScope
+```typescript
+enum LocationScope {
+  SAME_CITY = 'SAME_CITY',       // Match only users in same city
+  SAME_STATE = 'SAME_STATE',     // Match users in same state (default)
+  SAME_COUNTRY = 'SAME_COUNTRY', // Match users in same country
+  ANY = 'ANY'                    // No location filtering
+}
+```
+
+### PromptCategory
+```typescript
+enum PromptCategory {
+  FUN = 'FUN',
+  LIFESTYLE = 'LIFESTYLE',
+  VALUES = 'VALUES',
+  ICEBREAKER = 'ICEBREAKER'
+}
+```
+
+### SwipeAction
+```typescript
+enum SwipeAction {
+  LIKE = 'LIKE',   // User liked the profile
+  PASS = 'PASS'    // User passed/rejected the profile
+}
 ```
 
 ---
@@ -290,25 +346,13 @@ Prompt (1) ←→ (N) PromptAnswer
 | Profile | `state` | Location-based searches |
 | Profile | `orientation` | Orientation filtering |
 | Photo | `userId` | Fetching user photos |
-| Like | `toUserId` | Fetching received likes |
-| Swipe | `toUserId` | Filtering already-swiped users |
-
----
-
-## Enums Reference
-
-| Enum | Values | Usage |
-|------|--------|-------|
-| `Gender` | MALE, FEMALE, NON_BINARY, OTHER | Profile gender, preferences |
-| `PromptCategory` | FUN, LIFESTYLE, VALUES, ICEBREAKER | Categorizing prompts |
-| `LocationScope` | SAME_CITY, SAME_STATE, SAME_COUNTRY, ANY | Matching scope |
-| `SwipeAction` | LIKE, PASS | Tracking swipe actions |
+| Swipe | `toUserId` | Fetching received likes, filtering swiped users |
 
 ---
 
 ## Location Validation
 
-Location fields are validated against a constants file. See `apps/dating-backend/src/constants/locations.ts`.
+Location fields are validated against a constants file at `apps/dating-backend/src/constants/locations.ts`.
 
 **Supported Countries:** India, USA, UK, Canada, Australia
 
@@ -316,13 +360,29 @@ Location fields are validated against a constants file. See `apps/dating-backend
 - `validateLocation(country, state)` - Validates country/state combination
 - `getStates(country)` - Returns valid states for a country
 - `isValidCountry(country)` - Checks if country is valid
+- `isValidState(country, state)` - Checks if state is valid for country
 
 ---
 
 ## Database Access
 
-**Prisma Client:** `packages/database/src/client.ts`
+| Item | Path |
+|------|------|
+| Prisma Client | `packages/database/src/client.ts` |
+| Schema File | `packages/database/prisma/schema.prisma` |
+| Migrations | `packages/database/prisma/migrations/` |
+| Generated Types | `packages/database/src/generated/prisma/` |
 
-**Schema File:** `packages/database/prisma/schema.prisma`
+---
 
-**Migrations:** `packages/database/prisma/migrations/`
+## Cascade Deletes
+
+All relations use `onDelete: Cascade` which means:
+- Deleting a **User** automatically deletes their Profile, Preferences, Photos, Likes, Swipes, PromptAnswers, and Matches
+- Deleting a **Prompt** automatically deletes all PromptAnswers for that prompt
+
+---
+
+## Frontend TypeScript Types
+
+For complete TypeScript types to use in the frontend, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md#typescript-types-for-frontend).

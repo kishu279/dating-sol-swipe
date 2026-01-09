@@ -41,8 +41,7 @@ model User {
   profile          Profile?
   preferences      Preferences?
   photos           Photo[]
-  likesGiven       Like[]      @relation("UserLikes")
-  likesReceived    Like[]      @relation("UserLikedBy")
+
   promptAnswers    PromptAnswer[]
   matchesAsFirst   Matches[]   @relation("MatchFirst")
   matchesAsSecond  Matches[]   @relation("MatchSecond")
@@ -130,22 +129,10 @@ model Photo {
   @@index([userId])
 }
 
-model Like {
-  id           String   @id @default(cuid())
-  fromUserId   String
-  toUserId     String
-  createdAt    DateTime @default(now())
-
-  fromUser     User     @relation("UserLikes", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser       User     @relation("UserLikedBy", fields: [toUserId], references: [id], onDelete: Cascade)
-
-  @@unique([fromUserId, toUserId])
-  @@index([toUserId])
-}
-
 enum SwipeAction {
   LIKE
   PASS
+  DISLIKE
 }
 
 model Swipe {

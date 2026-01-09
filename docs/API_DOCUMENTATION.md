@@ -19,6 +19,7 @@
 | `POST` | `/user/:publicKey/prompts` | Submit prompt answers |
 | `GET` | `/user/:publicKey/next-suggestion` | Get next match suggestion |
 | `POST` | `/user/:publicKey/like` | Like a user |
+| `POST` | `/user/:publicKey/report` | Report/dislike a user |
 | `GET` | `/user/:publicKey/likes` | Get received likes |
 | `GET` | `/user/:publicKey/matches` | Get matches |
 
@@ -42,6 +43,14 @@ Create a new user
 }
 ```
 
+**Response (400):**
+```json
+{
+  "success": false,
+  "error": "User already exists"
+}
+```
+
 ---
 
 ### `GET /api/user/:publicKey`
@@ -57,22 +66,28 @@ Get user with profile and preferences
     "isActive": true,
     "isVerified": false,
     "isPremium": false,
-    "lastActiveAt": "ISO8601",
+    "createdAt": "ISO8601",
+    "updatedAt": "ISO8601",
+    "lastActiveAt": "ISO8601 | null",
     "profile": {
+      "id": "string",
+      "userId": "string",
       "displayName": "string",
       "age": 25,
       "gender": "MALE | FEMALE | NON_BINARY | OTHER",
       "orientation": "string",
-      "bio": "string",
-      "profession": "string",
+      "bio": "string | null",
+      "profession": "string | null",
       "hobbies": ["string"],
-      "religion": "string",
-      "country": "string",
-      "state": "string",
-      "city": "string",
+      "religion": "string | null",
+      "country": "string | null",
+      "state": "string | null",
+      "city": "string | null",
       "heightCm": 175
     },
     "preferences": {
+      "id": "string",
+      "userId": "string",
       "preferredGenders": ["MALE", "FEMALE"],
       "ageMin": 21,
       "ageMax": 30,
@@ -108,6 +123,22 @@ Create user profile
 }
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `publicKey` | string | ✅ | User's wallet public key |
+| `name` | string | ✅ | Display name |
+| `age` | number | ✅ | Age (years) |
+| `gender` | Gender | ✅ | Gender enum value |
+| `orientation` | string | ✅ | Sexual orientation |
+| `bio` | string | ❌ | Profile bio |
+| `heightCm` | number | ❌ | Height in centimeters |
+| `hobbies` | string[] | ❌ | List of hobbies |
+| `country` | string | ❌ | Country (e.g., "India") |
+| `state` | string | ❌ | State (e.g., "Maharashtra") |
+| `city` | string | ❌ | City (e.g., "Mumbai") |
+| `profession` | string | ❌ | Job/profession |
+| `religion` | string | ❌ | Religion |
+
 **Response (201):**
 ```json
 {
@@ -116,7 +147,7 @@ Create user profile
 }
 ```
 
-**Errors:** `400` Profile already exists, `404` User not found
+**Errors:** `400` Profile already exists or invalid location, `404` User not found
 
 ---
 
@@ -150,6 +181,13 @@ Set matching preferences
 }
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `preferredGenders` | Gender[] | ❌ | Preferred gender(s) |
+| `ageMin` | number | ❌ | Minimum age preference |
+| `ageMax` | number | ❌ | Maximum age preference |
+| `locationScope` | LocationScope | ❌ | Location matching scope (default: SAME_STATE) |
+
 **locationScope values:**
 | Value | Description |
 |-------|-------------|
@@ -166,6 +204,8 @@ Set matching preferences
 }
 ```
 
+**Errors:** `400` Preferences already exist, `404` User not found
+
 ---
 
 ### `GET /api/user/:publicKey/preferences`
@@ -177,6 +217,7 @@ Get user preferences
   "success": true,
   "data": {
     "id": "string",
+    "userId": "string",
     "preferredGenders": ["MALE", "FEMALE"],
     "ageMin": 21,
     "ageMax": 30,
@@ -201,7 +242,9 @@ Get all available prompts
       "id": "string",
       "question": "Two truths and a lie — go.",
       "category": "FUN | LIFESTYLE | VALUES | ICEBREAKER",
-      "order": 1
+      "isActive": true,
+      "order": 1,
+      "createdAt": "ISO8601"
     }
   ]
 }
@@ -226,12 +269,22 @@ Submit prompt answers
 { "success": true, "message": "Prompts answered successfully" }
 ```
 
+**Errors:** `400` Invalid answers array, `404` User not found
+
 ---
 
 ## Suggestions
 
 ### `GET /api/user/:publicKey/next-suggestion`
 Get next matching user based on preferences
+
+**Matching Logic:**
+1. Excludes self and already-swiped users
+2. Filters by `preferredGenders` if set
+3. Filters by `ageMin`/`ageMax` range if set
+4. Filters by location based on `locationScope`
+5. Orders by: premium users first, then most recently active
+6. Updates requester's `lastActiveAt`
 
 **Response (200):**
 ```json
@@ -241,6 +294,7 @@ Get next matching user based on preferences
     "id": "string",
     "walletPubKey": "string",
     "profile": {
+      "id": "string",
       "displayName": "string",
       "age": 25,
       "gender": "FEMALE",
@@ -255,12 +309,13 @@ Get next matching user based on preferences
       "heightCm": 165
     },
     "photos": [
-      { "url": "https://...", "order": 0 }
+      { "id": "string", "url": "https://...", "order": 0 }
     ],
     "promptAnswers": [
       {
+        "id": "string",
         "answer": "My answer",
-        "prompt": { "question": "Two truths and a lie" }
+        "prompt": { "id": "string", "question": "Two truths and a lie" }
       }
     ]
   }
@@ -276,6 +331,8 @@ Get next matching user based on preferences
 }
 ```
 
+**Errors:** `400` User not found or profile not created
+
 ---
 
 ## Likes
@@ -288,13 +345,13 @@ Like another user (creates match if mutual)
 { "toWhom": "target_wallet_public_key" }
 ```
 
-**Response (200):**
+**Response (200) - Like created:**
 ```json
 {
   "success": true,
   "message": "User liked successfully",
   "isMatch": false,
-  "likeId": "string"
+  "swipeId": "string"
 }
 ```
 
@@ -304,14 +361,16 @@ Like another user (creates match if mutual)
   "success": true,
   "message": "It's a match! 🎉",
   "isMatch": true,
-  "likeId": "string"
+  "swipeId": "string"
 }
 ```
+
+**Errors:** `400` Missing toWhom or trying to like self, `404` User not found, `409` Already swiped
 
 ---
 
 ### `GET /api/user/:publicKey/likes`
-Get all likes received
+Get all likes received (users who swiped LIKE on you)
 
 **Response (200):**
 ```json
@@ -320,18 +379,42 @@ Get all likes received
   "count": 5,
   "data": [
     {
-      "likeId": "string",
+      "swipeId": "string",
       "likedAt": "ISO8601",
       "user": {
         "id": "string",
         "walletPubKey": "string",
         "displayName": "string",
-        "profileImage": "https://..."
+        "profileImage": "https://... | null"
       }
     }
   ]
 }
 ```
+---
+
+### `POST /api/user/:publicKey/report`
+Report/dislike a user (prevents them from appearing in suggestions)
+
+**Request:**
+```json
+{ "toWhom": "target_wallet_public_key_or_id" }
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "User reported successfully",
+  "swipeId": "string"
+}
+```
+
+**Notes:**
+- If user was previously liked, swipe is **updated** to DISLIKE
+- Reported users won't appear in suggestions
+
+**Errors:** `400` Missing toWhom or trying to report self, `404` User not found
 
 ---
 
@@ -353,11 +436,158 @@ Get all mutual matches
         "id": "string",
         "walletPubKey": "string",
         "displayName": "string",
-        "profileImage": "https://...",
-        "profile": { ... }
+        "profileImage": "https://... | null",
+        "profile": {
+          "id": "string",
+          "displayName": "string",
+          "age": 25,
+          "gender": "FEMALE",
+          "orientation": "string",
+          "bio": "string",
+          "profession": "string",
+          "hobbies": ["string"],
+          "religion": "string",
+          "country": "string",
+          "state": "string",
+          "city": "string",
+          "heightCm": 170
+        }
       }
     }
   ]
+}
+```
+
+---
+
+## TypeScript Types for Frontend
+
+```typescript
+// Enums
+type Gender = 'MALE' | 'FEMALE' | 'NON_BINARY' | 'OTHER';
+type LocationScope = 'SAME_CITY' | 'SAME_STATE' | 'SAME_COUNTRY' | 'ANY';
+type PromptCategory = 'FUN' | 'LIFESTYLE' | 'VALUES' | 'ICEBREAKER';
+type SwipeAction = 'LIKE' | 'PASS';
+
+// Request Types
+interface CreateUserRequest {
+  walletPublicKey: string;
+}
+
+interface CreateProfileRequest {
+  publicKey: string;
+  name: string;
+  age: number;
+  gender: Gender;
+  orientation: string;
+  bio?: string;
+  heightCm?: number;
+  hobbies?: string[];
+  country?: string;
+  state?: string;
+  city?: string;
+  profession?: string;
+  religion?: string;
+}
+
+interface SetPreferencesRequest {
+  preferredGenders?: Gender[];
+  ageMin?: number;
+  ageMax?: number;
+  locationScope?: LocationScope;
+}
+
+interface AnswerPromptsRequest {
+  answers: Array<{
+    promptId: string;
+    answer: string;
+  }>;
+}
+
+interface LikeUserRequest {
+  toWhom: string;
+}
+
+// Response Types
+interface User {
+  id: string;
+  walletPubKey: string;
+  isActive: boolean;
+  isVerified: boolean;
+  isPremium: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastActiveAt: string | null;
+  profile: Profile | null;
+  preferences: Preferences | null;
+}
+
+interface Profile {
+  id: string;
+  userId: string;
+  displayName: string;
+  age: number;
+  gender: Gender;
+  orientation: string;
+  bio: string | null;
+  profession: string | null;
+  hobbies: string[];
+  religion: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  heightCm: number | null;
+}
+
+interface Preferences {
+  id: string;
+  userId: string;
+  preferredGenders: Gender[];
+  ageMin: number | null;
+  ageMax: number | null;
+  locationScope: LocationScope;
+}
+
+interface Photo {
+  id: string;
+  userId: string;
+  url: string;
+  order: number;
+}
+
+interface Prompt {
+  id: string;
+  question: string;
+  category: PromptCategory;
+  isActive: boolean;
+  order: number | null;
+  createdAt: string;
+}
+
+interface PromptAnswer {
+  id: string;
+  userId: string;
+  promptId: string;
+  answer: string;
+  createdAt: string;
+  prompt?: Prompt;
+}
+
+interface Suggestion {
+  id: string;
+  walletPubKey: string;
+  profile: Profile;
+  photos: Photo[];
+  promptAnswers: PromptAnswer[];
+}
+
+// API Response wrapper
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  count?: number;
 }
 ```
 
@@ -370,6 +600,7 @@ Get all mutual matches
 | `gender` | `MALE`, `FEMALE`, `NON_BINARY`, `OTHER` |
 | `locationScope` | `SAME_CITY`, `SAME_STATE`, `SAME_COUNTRY`, `ANY` |
 | `promptCategory` | `FUN`, `LIFESTYLE`, `VALUES`, `ICEBREAKER` |
+| `swipeAction` | `LIKE`, `PASS` |
 
 ---
 
