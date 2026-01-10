@@ -19,7 +19,7 @@
   },
   "packageManager": "bun@1.2.23",
   "engines": {
-    "node": ">=18"
+    "node": ">=24.11.1"
   },
   "dependencies": {
     "@types/cors": "^2.8.19",

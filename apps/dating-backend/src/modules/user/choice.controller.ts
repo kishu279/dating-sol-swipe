@@ -154,6 +154,8 @@ export const likeUser = async (req: Request, res: Response) => {
  * @returns {500} On error.
  */
 export const reportUser = async (req: Request, res: Response) => {
+    console.log("DEBUG: Reporting user");
+
     const { publicKey } = req.params;
     const { toWhom }: { toWhom: string } = req.body;
 

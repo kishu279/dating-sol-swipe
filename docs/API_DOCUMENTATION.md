@@ -18,10 +18,10 @@
 | `GET` | `/user/:publicKey/prompts` | Get available prompts |
 | `POST` | `/user/:publicKey/prompts` | Submit prompt answers |
 | `GET` | `/user/:publicKey/next-suggestion` | Get next match suggestion |
-| `POST` | `/user/:publicKey/like` | Like a user |
-| `POST` | `/user/:publicKey/report` | Report/dislike a user |
-| `GET` | `/user/:publicKey/likes` | Get received likes |
-| `GET` | `/user/:publicKey/matches` | Get matches |
+| `POST` | `/user/swipe/:publicKey/like` | Like a user |
+| `POST` | `/user/swipe/:publicKey/report` | Report/dislike a user |
+| `GET` | `/user/swipe/:publicKey/likes` | Get received likes |
+| `GET` | `/user/swipe/:publicKey/matches` | Get matches |
 
 ---
 
@@ -335,9 +335,9 @@ Get next matching user based on preferences
 
 ---
 
-## Likes
+## Swipe Actions
 
-### `POST /api/user/:publicKey/like`
+### `POST /api/user/swipe/:publicKey/like`
 Like another user (creates match if mutual)
 
 **Request:**
@@ -369,7 +369,7 @@ Like another user (creates match if mutual)
 
 ---
 
-### `GET /api/user/:publicKey/likes`
+### `GET /api/user/swipe/:publicKey/likes`
 Get all likes received (users who swiped LIKE on you)
 
 **Response (200):**
@@ -393,7 +393,7 @@ Get all likes received (users who swiped LIKE on you)
 ```
 ---
 
-### `POST /api/user/:publicKey/report`
+### `POST /api/user/swipe/:publicKey/report`
 Report/dislike a user (prevents them from appearing in suggestions)
 
 **Request:**
@@ -420,7 +420,7 @@ Report/dislike a user (prevents them from appearing in suggestions)
 
 ## Matches
 
-### `GET /api/user/:publicKey/matches`
+### `GET /api/user/swipe/:publicKey/matches`
 Get all mutual matches
 
 **Response (200):**

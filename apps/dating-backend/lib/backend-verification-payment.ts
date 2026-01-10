@@ -58,6 +58,11 @@ class VerificationPayment {
         true // allowOwnerOffCurve: true because escrow_profile is a PDA
       );
 
+      // if (!this.program.methods.swipe) {
+      //   throw new Error("Program not initialized");
+      // }
+
+      // @ts-ignore
       const tx = await this.program.methods
         .swipe()
         .accountsPartial({
@@ -78,6 +83,7 @@ class VerificationPayment {
 
       // Get the escrow profile account data
       const escrowProfileAccount =
+        // @ts-ignore
         await this.program.account.escrowProfile.fetch(escrow_profile_pda);
       console.log("Depositor Account:", {
         nonce: escrowProfileAccount.nonce.abs().toNumber(),
@@ -95,6 +101,7 @@ class VerificationPayment {
         await this.provider.connection.getAccountInfo(treasuryAccount);
       console.log(
         "Treasury Account Info:",
+        // @ts-ignore
         treasuryAccountInfo.lamports / web3.LAMPORTS_PER_SOL
       );
 
@@ -102,6 +109,7 @@ class VerificationPayment {
         signature: tx,
         nonce: escrowProfileAccount.nonce.abs().toNumber(),
         bump: escrowProfileAccount.bump,
+        // @ts-ignore
         treasuryBalance: treasuryAccountInfo.lamports / web3.LAMPORTS_PER_SOL,
       };
     } catch (error) {
@@ -117,6 +125,7 @@ class VerificationPayment {
    */
   public async testConnection() {
     try {
+      // @ts-ignore
       const accounts = await this.program.account.escrowConfig.all();
       console.log("Found escrow configs:", accounts.length);
       return accounts;
