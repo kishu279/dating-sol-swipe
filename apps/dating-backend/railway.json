@@ -3,12 +3,11 @@
   "build": {
     "builder": "RAILPACK",
     "buildCommand": "bun install && bunx prisma generate --schema=packages/database/prisma/schema.prisma && bun run build"
-    },
+  },
   "deploy": {
-    "preDeployCommand": ["bun run db:migrate --schema=packages/database/prisma/schema.prisma"],
+    "preDeployCommand": "bun run db:migrate",
     "startCommand": "bun run start",
     "healthcheckPath": "/",
-    "healthcheckTimeout": 100,
-    "restartPolicyType": "never"
-    }
+    "healthcheckTimeout": 100
+  }
 }
