@@ -7,7 +7,7 @@
   "deploy": {
     "preDeployCommand": "bunx prisma migrate deploy --schema=packages/database/prisma/schema.prisma --config=packages/database/prisma.config.ts",
     "startCommand": "bun run start",
-    "healthcheckPath": "/",
+    "healthcheckPath": "/api/health",
     "healthcheckTimeout": 100
   }
 }
