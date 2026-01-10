@@ -25,5 +25,9 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "packageManager": "bun@1.2.23",
+  "engines": {
+    "node": ">=22"
   }
 }
