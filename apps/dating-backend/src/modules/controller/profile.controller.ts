@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
 import { validateLocation } from "../../constants/locations";
+import { createProfileBodySchema, updateProfileBodySchema } from "../../../lib/validation-schema";
 
 /**
  * Creates a new profile for an existing user.
@@ -17,16 +18,19 @@ import { validateLocation } from "../../constants/locations";
  * @returns {500} On error. Returns error message.
  */
 export const createProfile = async (req: Request, res: Response) => {
-    const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, country, state, city, profession, religion } = req.body;
+    const validation = createProfileBodySchema.safeParse(req.body);
+
+    if (!validation.success) {
+        res.status(400).json({
+            success: false,
+            error: validation.error.issues[0]?.message || "Validation failed",
+        });
+        return;
+    }
+
+    const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, country, state, city, profession, religion } = validation.data;
 
     try {
-        if (!publicKey) {
-            res.status(400).json({
-                success: false,
-                error: "publicKey is required",
-            });
-            return;
-        }
 
         // Validate location if provided
         if (country && state) {
@@ -110,7 +114,17 @@ export const createProfile = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const updateProfile = async (req: Request, res: Response) => {
-    const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, country, state, city, profession, religion } = req.body;
+    const validation = updateProfileBodySchema.safeParse(req.body);
+
+    if (!validation.success) {
+        res.status(400).json({
+            success: false,
+            error: validation.error.issues[0]?.message || "Validation failed",
+        });
+        return;
+    }
+
+    const { publicKey, name, age, bio, gender, orientation, heightCm, hobbies, country, state, city, profession, religion } = validation.data;
 
     try {
         // Validate location if provided

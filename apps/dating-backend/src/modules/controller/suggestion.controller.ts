@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
+import { getNextSuggestionParamsSchema } from "../../../lib/validation-schema";
 
 /**
  * Gets the next user suggestion for the given user based on preferences.
@@ -10,7 +11,15 @@ import { prisma } from "@repo/database";
  * @returns {500} On error. Returns error message.
  */
 export const getNextSuggestion = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
+    const paramsValidation = getNextSuggestionParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+    }
+
+    const { publicKey } = paramsValidation.data;
 
     try {
         // Get the current user with preferences and profile

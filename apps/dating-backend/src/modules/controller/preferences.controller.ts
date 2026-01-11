@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
+import { setUserPreferencesParamsSchema, setUserPreferencesBodySchema, getUserPreferencesParamsSchema } from "../../../lib/validation-schema";
 
 /**
  * Sets user preferences for a specific user.
@@ -14,8 +15,26 @@ import { prisma } from "@repo/database";
  * @returns {500} On error. Returns error message.
  */
 export const setUserPreferences = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
-    const { preferredGenders, ageMin, ageMax, locationScope } = req.body;
+    const paramsValidation = setUserPreferencesParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+        return;
+    }
+
+    const bodyValidation = setUserPreferencesBodySchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+        res.status(400).json({
+            success: false,
+            error: bodyValidation.error.issues[0]?.message || "Invalid body",
+        });
+        return;
+    }
+
+    const { publicKey } = paramsValidation.data;
+    const { preferredGenders, ageMin, ageMax, locationScope } = bodyValidation.data;
 
     try {
         const user = await prisma.user.findUnique({
@@ -75,7 +94,16 @@ export const setUserPreferences = async (req: Request, res: Response) => {
  * @returns {500} On error. Returns error message.
  */
 export const getUserPreferences = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
+    const paramsValidation = getUserPreferencesParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+        return;
+    }
+
+    const { publicKey } = paramsValidation.data;
 
     try {
         const user = await prisma.user.findUnique({

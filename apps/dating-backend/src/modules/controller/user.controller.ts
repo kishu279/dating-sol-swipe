@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
+import type { CreateUserBody, GetUserByIdParams } from "../../../lib/validation-schema";
+import { publicKeySchema, getUserByIdParamsSchema } from "../../../lib/validation-schema";
 
 /**
  * Creates a new user in the database with the provided wallet public key.
@@ -13,6 +15,16 @@ import { prisma } from "@repo/database";
 export const createUser = async (req: Request, res: Response) => {
   const { walletPublicKey } = req.body;
   console.log("DEBUG: Creating user with walletPublicKey:", walletPublicKey);
+
+  const checkValidation = publicKeySchema.safeParse(walletPublicKey);
+
+  if (!checkValidation.success) {
+    res.status(400).json({
+      success: false,
+      error: checkValidation.error.message,
+    });
+    return;
+  }
 
   try {
     const userExists = await prisma.user.findUnique({
@@ -64,7 +76,15 @@ export const createUser = async (req: Request, res: Response) => {
 export const getUserById = async (req: Request, res: Response) => {
   const { publicKey } = req.params;
 
-  console.log("DEBUG: Fetching user with publicKey:", publicKey);
+  const checkValidation = getUserByIdParamsSchema.safeParse(req.params)
+
+  if (!checkValidation.success) {
+    res.status(400).json({
+      success: false,
+      error: checkValidation.error.message,
+    });
+    return;
+  }
 
   try {
     const user = await prisma.user.findUnique({

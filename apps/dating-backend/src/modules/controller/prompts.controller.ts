@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
+import { getPromptsParamsSchema, ansPromptsParamsSchema, ansPromptsBodySchema } from "../../../lib/validation-schema";
 
 /**
  * Fetches all available prompts for users to answer.
@@ -10,7 +11,14 @@ import { prisma } from "@repo/database";
  * @returns {500} On error. Returns error message.
  */
 export const getPrompts = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
+    const paramsValidation = getPromptsParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+        return;
+    }
 
     try {
         const prompts = await prisma.prompt.findMany({});
@@ -45,14 +53,24 @@ type ansPromptsBody = {
  * @returns {500} On error. Returns error message.
  */
 export const ansPrompts = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
-
-    if (!publicKey || typeof publicKey !== "string") {
+    const paramsValidation = ansPromptsParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
         return res.status(400).json({
             success: false,
-            error: "Missing or invalid public key",
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
         });
     }
+
+    const bodyValidation = ansPromptsBodySchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: bodyValidation.error.issues[0]?.message || "Invalid body",
+        });
+    }
+
+    const { publicKey } = paramsValidation.data;
+    const { answers } = bodyValidation.data;
 
     try {
         const user = await prisma.user.findUnique({
@@ -66,31 +84,7 @@ export const ansPrompts = async (req: Request, res: Response) => {
             });
         }
 
-        const { answers }: ansPromptsBody = req.body;
-
         console.log("[DEBUG] Received answers:", answers);
-
-        if (!Array.isArray(answers) || answers.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: "Answers must be a non-empty array",
-            });
-        }
-
-        for (const ans of answers) {
-            if (!ans.promptId || typeof ans.promptId !== "string") {
-                return res.status(400).json({
-                    success: false,
-                    error: "Invalid promptId in answers",
-                });
-            }
-            if (!ans.answer || typeof ans.answer !== "string") {
-                return res.status(400).json({
-                    success: false,
-                    error: "Invalid answer in answers",
-                });
-            }
-        }
 
         const promptsAns = await prisma.promptAnswer.createMany({
             data: answers.map((ans) => ({

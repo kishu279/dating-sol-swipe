@@ -1,6 +1,7 @@
 
 import type { Request, Response } from "express";
 import { prisma } from "@repo/database";
+import { likeUserParamsSchema, likeUserBodySchema, reportUserParamsSchema, reportUserBodySchema, getLikesParamsSchema, getMatchesParamsSchema } from "../../../lib/validation-schema";
 
 
 /**
@@ -16,15 +17,30 @@ import { prisma } from "@repo/database";
  * @returns {500} On error.
  */
 export const likeUser = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
-    const { toWhom }: { toWhom: string } = req.body;
+    const paramsValidation = likeUserParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+    }
+
+    const bodyValidation = likeUserBodySchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: bodyValidation.error.issues[0]?.message || "Invalid body",
+        });
+    }
+
+    const { publicKey } = paramsValidation.data;
+    const { toWhom } = bodyValidation.data;
 
     try {
-        // Validate input
-        if (!toWhom) {
+        if (publicKey === toWhom) {
             return res.status(400).json({
                 success: false,
-                error: "toWhom (target publicKey) is required",
+                error: "Cannot like yourself",
             });
         }
 
@@ -156,15 +172,30 @@ export const likeUser = async (req: Request, res: Response) => {
 export const reportUser = async (req: Request, res: Response) => {
     console.log("DEBUG: Reporting user");
 
-    const { publicKey } = req.params;
-    const { toWhom }: { toWhom: string } = req.body;
+    const paramsValidation = reportUserParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+    }
+
+    const bodyValidation = reportUserBodySchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: bodyValidation.error.issues[0]?.message || "Invalid body",
+        });
+    }
+
+    const { publicKey } = paramsValidation.data;
+    const { toWhom } = bodyValidation.data;
 
     try {
-        // Validate input
-        if (!toWhom) {
+        if (publicKey === toWhom) {
             return res.status(400).json({
                 success: false,
-                error: "toWhom (target publicKey) is required",
+                error: "Cannot report yourself",
             });
         }
 
@@ -249,7 +280,15 @@ export const reportUser = async (req: Request, res: Response) => {
  * @returns {500} On error.
  */
 export const getLikes = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
+    const paramsValidation = getLikesParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+    }
+
+    const { publicKey } = paramsValidation.data;
 
     try {
         const user = await prisma.user.findUnique({
@@ -314,7 +353,15 @@ export const getLikes = async (req: Request, res: Response) => {
  * @returns {500} On error.
  */
 export const getMatches = async (req: Request, res: Response) => {
-    const { publicKey } = req.params;
+    const paramsValidation = getMatchesParamsSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+        return res.status(400).json({
+            success: false,
+            error: paramsValidation.error.issues[0]?.message || "Invalid params",
+        });
+    }
+
+    const { publicKey } = paramsValidation.data;
 
     try {
         const user = await prisma.user.findUnique({

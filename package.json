@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@types/cors": "^2.8.19",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "zod": "^4.3.5"
   },
   "version": "1.0.0"
 }

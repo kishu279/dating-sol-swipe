@@ -1,10 +1,10 @@
 import { Router } from "express";
-import * as userController from "./user.controller";
-import * as profileController from "./profile.controller";
-import * as preferencesController from "./preferences.controller";
-import * as promptsController from "./prompts.controller";
-import * as suggestionController from "./suggestion.controller";
-import * as choiceController from "./choice.controller";
+import * as userController from "../controller/user.controller";
+import * as profileController from "../controller/profile.controller";
+import * as preferencesController from "../controller/preferences.controller";
+import * as promptsController from "../controller/prompts.controller";
+import * as suggestionController from "../controller/suggestion.controller";
+import * as choiceController from "../controller/choice.controller";
 
 const router = Router();
 

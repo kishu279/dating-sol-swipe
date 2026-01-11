@@ -1,5 +1,5 @@
 import { Router } from "express";
-import userRouter from "../modules/user/user.routes";
+import userRouter from "./../modules/router/user.routes";
 import { prisma } from "@repo/database";
 
 const router = Router();
