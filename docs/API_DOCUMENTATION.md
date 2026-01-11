@@ -25,6 +25,31 @@
 
 ---
 
+## Validation
+
+All routes use **Zod** schemas for input validation. Invalid requests return:
+
+```json
+{
+  "success": false,
+  "error": "<validation error message>"
+}
+```
+
+**Validation Rules:**
+
+| Field | Rule |
+|-------|------|
+| `publicKey` | Required, non-empty string |
+| `age` | Integer, 18-120 |
+| `heightCm` | Integer, 50-300 |
+| `gender` | Enum: `MALE`, `FEMALE`, `NON_BINARY`, `OTHER` |
+| `locationScope` | Enum: `SAME_CITY`, `SAME_STATE`, `SAME_COUNTRY`, `ANY` |
+| `preferredGenders` | Array of Gender enums |
+| `answers` | Non-empty array with valid `promptId` and `answer` |
+
+---
+
 ## User Management
 
 ### `POST /api/user`
@@ -614,3 +639,20 @@ interface ApiResponse<T> {
 | `404` | Not Found |
 | `409` | Conflict (duplicate) |
 | `500` | Server Error |
+
+---
+
+## Validation Schemas
+
+All validation schemas are defined in `apps/dating-backend/lib/validation-schema.ts` and export TypeScript types:
+
+```typescript
+import { 
+  createUserBodySchema, 
+  createProfileBodySchema,
+  setUserPreferencesBodySchema,
+  // ... other schemas
+  type CreateUserBody,
+  type CreateProfileBody
+} from '../lib/validation-schema';
+```

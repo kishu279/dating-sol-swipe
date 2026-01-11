@@ -1,135 +1,219 @@
-# Turborepo starter
+# 💕 Pairly - Web3 Dating App
 
-This Turborepo starter is maintained by the Turborepo core team.
+A decentralized dating application built on Solana, featuring wallet-based authentication, profile matching, and swipe mechanics.
 
-## Using this example
+---
 
-Run the following command:
+## 🚀 Quick Start
 
-```sh
-npx create-turbo@latest
+```bash
+# Install dependencies
+bun install
+
+# Set up environment variables
+cp apps/dating-backend/.env.example apps/dating-backend/.env
+
+# Run database migrations
+cd packages/database && bunx prisma migrate dev
+
+# Seed the database (optional)
+bunx prisma db seed
+
+# Start development
+bun dev
 ```
 
-## What's inside?
+The app will be running at:
+- **Backend API**: http://localhost:3000
+- **Mobile App**: Expo Go on your device
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## 📦 Project Structure
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+dating-sol-swipe/
+├── apps/
+│   ├── dating-app/          # React Native (Expo) mobile app
+│   └── dating-backend/      # Express.js API server
+│
+├── packages/
+│   ├── database/            # Prisma ORM + PostgreSQL schema
+│   ├── ui/                  # Shared React components
+│   ├── eslint-config/       # ESLint configurations
+│   └── typescript-config/   # TypeScript configurations
+│
+└── docs/                    # Project documentation
+    ├── API_DOCUMENTATION.md
+    ├── DATABASE_SCHEMA.md
+    └── MONOREPO_ARCHITECTURE.md
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
+## ✨ Features
+
+### 🔐 Wallet Authentication
+- Solana wallet-based login (no passwords)
+- Works with Phantom, Solflare, and other wallets
+
+### 👤 User Profiles
+- Customizable profiles with photos, bio, hobbies
+- Prompt-based Q&A for personality matching
+- Location-based matching (city, state, country)
+
+### 💘 Matching System
+- Swipe-based discovery (Like/Pass/Report)
+- Mutual likes create matches
+- Preference filters: age, gender, location scope
+
+### ⚡ Premium Features
+- Premium users appear first in suggestions
+- Verified badge support
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Mobile** | React Native, Expo, TypeScript |
+| **Backend** | Express.js, TypeScript, Zod |
+| **Database** | PostgreSQL, Prisma ORM |
+| **Blockchain** | Solana, @solana/web3.js |
+| **Monorepo** | Turborepo, Bun |
+
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/user` | Create user |
+| `GET` | `/api/user/:publicKey` | Get user profile |
+| `POST` | `/api/user/profile` | Create profile |
+| `PUT` | `/api/user/profile` | Update profile |
+| `POST` | `/api/user/:publicKey/preferences` | Set preferences |
+| `GET` | `/api/user/:publicKey/prompts` | Get prompts |
+| `POST` | `/api/user/:publicKey/prompts` | Answer prompts |
+| `GET` | `/api/user/:publicKey/next-suggestion` | Get match suggestion |
+| `POST` | `/api/user/swipe/:publicKey/like` | Like user |
+| `POST` | `/api/user/swipe/:publicKey/report` | Report user |
+| `GET` | `/api/user/swipe/:publicKey/likes` | Get received likes |
+| `GET` | `/api/user/swipe/:publicKey/matches` | Get matches |
+
+📖 Full API documentation: [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)
+
+---
+
+## 🗄 Database Models
+
+| Model | Description |
+|-------|-------------|
+| **User** | Wallet address, activity status, premium/verified flags |
+| **Profile** | Name, age, gender, bio, location, hobbies |
+| **Preferences** | Preferred genders, age range, location scope |
+| **Photo** | Profile photos with ordering |
+| **Prompt** | Dating prompts/questions |
+| **PromptAnswer** | User answers to prompts |
+| **Swipe** | Like/Pass/Dislike actions |
+| **Matches** | Mutual likes between users |
+
+📖 Full schema docs: [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md)
+
+---
+
+## 🔧 Development
+
+### Commands
+
+```bash
+# Start all services
+bun dev
+
+# Backend only
+bun dev --filter=dating-backend
+
+# Mobile app only  
+bun dev --filter=dating-app
+
+# Database studio
+cd packages/database && bunx prisma studio
+
+# Run migrations
+cd packages/database && bunx prisma migrate dev
+
+# Generate Prisma client
+cd packages/database && bunx prisma generate
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+### Environment Variables
+
+Create `apps/dating-backend/.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/pairly"
+PORT=3000
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+## 📱 Mobile App
 
-```
-cd my-turborepo
+The mobile app is built with Expo and React Native.
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+```bash
+# Start Expo
+cd apps/dating-app
+bun start
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+# Run on iOS simulator
+bun ios
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+# Run on Android emulator
+bun android
 ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## 🧪 Validation
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+All API routes use **Zod** schemas for input validation:
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+- Request body and URL params are validated
+- Type-safe with exported TypeScript types
+- Consistent error responses
 
-```
-cd my-turborepo
+Schemas: `apps/dating-backend/lib/validation-schema.ts`
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
+---
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
+## 📄 Documentation
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+| Document | Description |
+|----------|-------------|
+| [API Documentation](./docs/API_DOCUMENTATION.md) | Complete API reference |
+| [Database Schema](./docs/DATABASE_SCHEMA.md) | Database models & relationships |
+| [Monorepo Architecture](./docs/MONOREPO_ARCHITECTURE.md) | Project structure guide |
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+---
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
+## 🤝 Contributing
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Useful Links
+---
 
-Learn more about the power of Turborepo:
+## 📜 License
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+This project is private and proprietary.
+
+---
+
+<p align="center">
+  Built with ❤️ using Solana, React Native & Express
+</p>

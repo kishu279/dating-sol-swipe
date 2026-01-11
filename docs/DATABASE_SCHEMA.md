@@ -28,8 +28,6 @@ model User {
   profile          Profile?                      // One-to-one with Profile
   preferences      Preferences?                  // One-to-one with Preferences
   photos           Photo[]                       // One-to-many with Photos
-  likesGiven       Like[]      @relation("UserLikes")       // Likes this user gave
-  likesReceived    Like[]      @relation("UserLikedBy")     // Likes this user received
   promptAnswers    PromptAnswer[]                // User's prompt answers
   matchesAsFirst   Matches[]   @relation("MatchFirst")      // Matches where user is first
   matchesAsSecond  Matches[]   @relation("MatchSecond")     // Matches where user is second
@@ -221,27 +219,6 @@ model PromptAnswer {
 
 ---
 
-### **Like Model**
-
-Represents likes between users.
-
-```prisma
-model Like {
-  id           String   @id @default(cuid())
-  fromUserId   String                           // User who liked
-  toUserId     String                           // User who was liked
-  createdAt    DateTime @default(now())
-
-  fromUser     User     @relation("UserLikes", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser       User     @relation("UserLikedBy", fields: [toUserId], references: [id], onDelete: Cascade)
-
-  @@unique([fromUserId, toUserId])              // Prevent duplicate likes
-  @@index([toUserId])                           // Index for received likes
-}
-```
-
----
-
 ### **Matches Model**
 
 Stores mutual matches between users. Created when both users swipe LIKE on each other.
@@ -270,8 +247,6 @@ erDiagram
     User ||--o| Preferences : has
     User ||--o{ Photo : has
     User ||--o{ PromptAnswer : submits
-    User ||--o{ Like : gives
-    User ||--o{ Like : receives
     User ||--o{ Swipe : makes
     User ||--o{ Swipe : receives
     User ||--o{ Matches : participates
@@ -378,7 +353,7 @@ Location fields are validated against a constants file at `apps/dating-backend/s
 ## Cascade Deletes
 
 All relations use `onDelete: Cascade` which means:
-- Deleting a **User** automatically deletes their Profile, Preferences, Photos, Likes, Swipes, PromptAnswers, and Matches
+- Deleting a **User** automatically deletes their Profile, Preferences, Photos, Swipes, PromptAnswers, and Matches
 - Deleting a **Prompt** automatically deletes all PromptAnswers for that prompt
 
 ---

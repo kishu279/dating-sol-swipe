@@ -33,8 +33,10 @@ app.get("/", (req: Request, res: Response) => {
 
 async function main() {
   const PORT = process.env.PORT || 3000;
-  const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+
+  const server = app.listen(Number(PORT), "0.0.0.0", () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+    console.log(`Network access: http://10.176.84.158:${PORT}`);
   });
 
   server.on("error", (error) => {
